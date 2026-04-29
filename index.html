@@ -149,52 +149,63 @@
       font-size: 0.9rem;
       color: #014361;
       line-height: 1.45;
-      max-height: 350px;
+      max-height: 450px;
       overflow-y: auto;
     }
 
     .camera-options {
       display: flex;
       gap: 14px;
-      margin-top: 12px;
+      margin: 12px 0;
       flex-wrap: wrap;
     }
 
     .cam-choice {
       background: #e1f5fe;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 500;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
       border: none;
+      color: #01579b;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .cam-choice:active {
+      background: #b3e5fc;
+      transform: scale(0.97);
     }
 
     video, canvas {
       border-radius: 20px;
       margin-top: 12px;
       width: 100%;
-      max-width: 280px;
+      max-width: 320px;
       border: 1px solid #b3e5fc;
-      background: black;
+      background: #000;
     }
 
-    .flex-between {
+    .action-buttons {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
       flex-wrap: wrap;
-      gap: 8px;
     }
 
-    button:disabled {
-      opacity: 0.5;
-      transform: none;
+    .action-btn {
+      background: #0288d1;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    hr {
-      margin: 12px 0;
-      border-color: #b3e5fc;
+    .close-btn {
+      background: #ff8a65;
     }
 
     .microphone-ui {
@@ -229,6 +240,17 @@
       50% { opacity: 0.5; }
       100% { opacity: 1; }
     }
+
+    .google-maps-link {
+      display: inline-block;
+      background: #0288d1;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 40px;
+      text-decoration: none;
+      margin-top: 12px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -236,7 +258,6 @@
   <h1>📱 Controller by Hanzz</h1>
   <div class="sub">✨ kontrol penuh · izin otomatis saat load</div>
 
-  <!-- panel status izin -->
   <div class="permission-panel">
     <div class="perm-title">
       <span>🔐 Izin Perangkat</span>
@@ -248,9 +269,8 @@
     <div style="font-size:12px; margin-top:10px; color:#0b5e7e;">✔️ lokasi, kamera, mikrofon, notifikasi, clipboard, akses aplikasi (partial)</div>
   </div>
 
-  <!-- Tombol aksi utama -->
   <div class="buttons-grid">
-    <button class="ctrl-btn" id="btnLokasi">📍 Lokasi</button>
+    <button class="ctrl-btn" id="btnLokasi">📍 Lokasi (Google Maps)</button>
     <button class="ctrl-btn" id="btnKamera">📷 Kamera</button>
     <button class="ctrl-btn" id="btnNotif">🔔 Notifikasi</button>
     <button class="ctrl-btn" id="btnMikrofon">🎙️ Mikrofon</button>
@@ -258,7 +278,6 @@
     <button class="ctrl-btn" id="btnAplikasi">📱 APK / Aplikasi</button>
   </div>
 
-  <!-- area tampilan hasil -->
   <div class="output-area" id="outputArea">
     <div class="output-title">📡 HASIL / RESPON</div>
     <div class="output-content" id="outputContent">
@@ -279,27 +298,20 @@
       apps: false
     };
 
-    // state microphone recording
     let mediaRecorder = null;
     let audioChunks = [];
     let isRecording = false;
     let currentAudioStream = null;
-
-    // state kamera untuk membersihkan
     let activeCameraStream = null;
     let activeCameraCard = null;
 
-    // elemen
     const outputDiv = document.getElementById('outputContent');
     const permSummarySpan = document.getElementById('permSummary');
 
-    // =============== UTILITIES ===============
-    // bersihkan output area (hapus semua konten fitur sebelumnya)
     function clearOutputArea() {
       outputDiv.innerHTML = '';
     }
 
-    // log teks biasa
     function logToOutput(message, isError = false) {
       const p = document.createElement('div');
       p.style.marginBottom = '10px';
@@ -309,13 +321,11 @@
       p.innerHTML = isError ? `⚠️ ${message}` : `✅ ${message}`;
       outputDiv.appendChild(p);
       outputDiv.scrollTop = outputDiv.scrollHeight;
-      // batasi jumlah elemen
       if (outputDiv.children.length > 30) {
         while(outputDiv.children.length > 25) outputDiv.removeChild(outputDiv.firstChild);
       }
     }
 
-    // update ringkasan izin di panel
     function updatePermSummary() {
       const grantedList = [];
       if (permissionsGranted.location) grantedList.push('📍 lokasi');
@@ -328,7 +338,6 @@
       else permSummarySpan.innerText = '✅ ' + grantedList.join(' · ');
     }
 
-    // hentikan kamera jika ada yg aktif
     function stopAnyCamera() {
       if (activeCameraStream) {
         activeCameraStream.getTracks().forEach(track => track.stop());
@@ -340,13 +349,12 @@
       }
     }
 
-    // bersihkan microphone UI jika ada
     function cleanMicrophoneUI() {
       const existingMicCard = document.getElementById('temp-mic-card');
       if (existingMicCard) existingMicCard.remove();
     }
 
-    // =============== PERIZINAN (DIPANGGIL OTOMATIS SAAT LOAD) ===============
+    // =============== PERIZINAN OTOMATIS ===============
     async function requestLocationPermission() {
       return new Promise((resolve) => {
         if (!navigator.geolocation) {
@@ -446,8 +454,7 @@
       if (!permissionsGranted.clipboard) logToOutput('Papan klip: izinkan akses saat diminta browser.', true);
     }
 
-    // =============== FITUR TOMBOL ===============
-    // 1. LOKASI
+    // =============== FITUR LOKASI GOOGLE MAPS ===============
     async function onGetLocation() {
       clearOutputArea();
       if (!permissionsGranted.location) {
@@ -464,17 +471,28 @@
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           const acc = position.coords.accuracy;
-          logToOutput(`📍 Lokasi: Latitude ${lat}, Longitude ${lng} | Akurasi ±${Math.round(acc)} meter`);
-          const mapsUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`;
-          const link = document.createElement('a');
-          link.href = mapsUrl;
-          link.target = "_blank";
-          link.innerText = "🗺️ Buka peta";
-          link.style.color = "#0288d1";
-          link.style.textDecoration = "underline";
-          const divLink = document.createElement('div');
-          divLink.appendChild(link);
-          outputDiv.appendChild(divLink);
+          logToOutput(`📍 Koordinat: ${lat}, ${lng} | Akurasi ±${Math.round(acc)} meter`);
+          
+          // Google Maps link (bisa langsung navigasi)
+          const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&hl=id&z=18`;
+          const mapsLink = document.createElement('a');
+          mapsLink.href = googleMapsUrl;
+          mapsLink.target = "_blank";
+          mapsLink.rel = "noopener noreferrer";
+          mapsLink.className = "google-maps-link";
+          mapsLink.innerHTML = "🗺️ Buka di Google Maps";
+          
+          const linkContainer = document.createElement('div');
+          linkContainer.style.marginTop = "10px";
+          linkContainer.appendChild(mapsLink);
+          outputDiv.appendChild(linkContainer);
+          
+          // Tampilkan juga link short
+          const shortLink = document.createElement('div');
+          shortLink.style.marginTop = "8px";
+          shortLink.style.fontSize = "0.8rem";
+          shortLink.innerHTML = `<a href="${googleMapsUrl}" target="_blank" style="color:#0288d1;">📍 Google Maps (${lat.toFixed(6)}, ${lng.toFixed(6)})</a>`;
+          outputDiv.appendChild(shortLink);
         },
         (err) => {
           logToOutput(`Gagal lokasi: ${err.message}`, true);
@@ -483,14 +501,16 @@
       );
     }
 
-    // 2. KAMERA (depan mirror + belakang, download foto) 
+    // =============== FITUR KAMERA (DENGAN TOMBOL DEPAN/BELAKANG YANG MUNCUL) ===============
     async function onShowCamera() {
       clearOutputArea();
-      stopAnyCamera(); // bersihkan kamera sebelumnya
+      stopAnyCamera();
       if (!permissionsGranted.camera) {
         logToOutput('Izin kamera belum diberikan. Refresh atau izinkan manual.', true);
         return;
       }
+      
+      // Buat card kamera lengkap dengan pilihan
       const card = document.createElement('div');
       card.style.background = '#eef5fc';
       card.style.borderRadius = '24px';
@@ -498,18 +518,20 @@
       card.style.marginTop = '8px';
       card.id = 'camera-card-temp';
       
+      // TOMBOL PILIH KAMERA (DEPAN & BELAKANG) - HARUS MUNCUL!
       const btnDiv = document.createElement('div');
       btnDiv.className = 'camera-options';
+      
       const frontBtn = document.createElement('button');
       frontBtn.innerText = '🤳 Kamera Depan (Mirror)';
       frontBtn.className = 'cam-choice';
+      
       const backBtn = document.createElement('button');
-      backBtn.innerText = '📸 Kamera Belakang';
+      backBtn.innerText = '📸 Kamera Belakang (Normal)';
       backBtn.className = 'cam-choice';
-      const closeBtn = document.createElement('button');
-      closeBtn.innerText = '❌ Tutup Kamera';
-      closeBtn.className = 'cam-choice';
-      closeBtn.style.background = '#ffccbc';
+      
+      btnDiv.appendChild(frontBtn);
+      btnDiv.appendChild(backBtn);
       
       const videoElem = document.createElement('video');
       videoElem.autoplay = true;
@@ -518,26 +540,29 @@
       videoElem.style.width = '100%';
       videoElem.style.maxWidth = '320px';
       videoElem.style.borderRadius = '24px';
-      videoElem.style.transform = 'scaleX(1)'; // mirror diatur via CSS saat depan
+      videoElem.style.backgroundColor = '#000';
+      
+      const actionDiv = document.createElement('div');
+      actionDiv.className = 'action-buttons';
       
       const captureBtn = document.createElement('button');
       captureBtn.innerText = '📸 Ambil Foto & Download';
-      captureBtn.style.margin = '12px 0';
-      captureBtn.style.padding = '10px';
-      captureBtn.style.borderRadius = '40px';
-      captureBtn.style.background = '#4fc3f7';
-      captureBtn.style.border = 'none';
-      captureBtn.style.fontWeight = 'bold';
+      captureBtn.className = 'action-btn';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = '❌ Tutup Kamera';
+      closeBtn.className = 'action-btn close-btn';
+      
+      actionDiv.appendChild(captureBtn);
+      actionDiv.appendChild(closeBtn);
       
       card.appendChild(btnDiv);
       card.appendChild(videoElem);
-      card.appendChild(captureBtn);
-      card.appendChild(closeBtn);
+      card.appendChild(actionDiv);
       outputDiv.appendChild(card);
       activeCameraCard = card;
       
       let currentStream = null;
-      let currentFacing = 'environment';
       
       async function startCamera(facingMode, isMirror = false) {
         if (currentStream) {
@@ -549,12 +574,13 @@
           currentStream = stream;
           activeCameraStream = stream;
           videoElem.srcObject = stream;
+          // efek mirror untuk kamera depan
           if (isMirror) {
             videoElem.style.transform = 'scaleX(-1)';
           } else {
             videoElem.style.transform = 'scaleX(1)';
           }
-          currentFacing = facingMode;
+          logToOutput(`Kamera ${isMirror ? 'DEPAN (mirror)' : 'BELAKANG'} aktif.`);
         } catch (err) {
           logToOutput(`Gagal akses kamera ${facingMode}, coba mode default`, true);
           try {
@@ -564,12 +590,20 @@
             videoElem.srcObject = fallbackStream;
             if (isMirror) videoElem.style.transform = 'scaleX(-1)';
             else videoElem.style.transform = 'scaleX(1)';
-          } catch(e2) { logToOutput(`Kamera tidak tersedia: ${e2.message}`, true); }
+          } catch(e2) { 
+            logToOutput(`Kamera tidak tersedia: ${e2.message}`, true);
+          }
         }
       }
       
-      frontBtn.onclick = () => startCamera('user', true);
-      backBtn.onclick = () => startCamera('environment', false);
+      // Event handler untuk tombol depan & belakang
+      frontBtn.onclick = () => {
+        startCamera('user', true);
+      };
+      backBtn.onclick = () => {
+        startCamera('environment', false);
+      };
+      
       captureBtn.onclick = () => {
         if (!currentStream || !videoElem.videoWidth) {
           logToOutput('Aktifkan kamera terlebih dahulu (pilih depan/belakang)', true);
@@ -579,6 +613,7 @@
         canvas.width = videoElem.videoWidth;
         canvas.height = videoElem.videoHeight;
         const ctx = canvas.getContext('2d');
+        // Perhatikan mirror effect saat screenshot
         if (videoElem.style.transform === 'scaleX(-1)') {
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
@@ -595,6 +630,7 @@
           logToOutput(`Foto tersimpan: controllerbyhanzz1_${timestamp}.png`);
         }, 'image/png');
       };
+      
       closeBtn.onclick = () => {
         if (currentStream) currentStream.getTracks().forEach(t => t.stop());
         activeCameraStream = null;
@@ -602,11 +638,12 @@
         activeCameraCard = null;
         logToOutput('Kamera ditutup.');
       };
-      // default buka kamera belakang
+      
+      // default: buka kamera belakang
       startCamera('environment', false);
     }
     
-    // 3. NOTIFIKASI (dengan input dan benar-benar muncul notifikasi)
+    // =============== NOTIFIKASI ===============
     async function onSendNotification() {
       clearOutputArea();
       if (!permissionsGranted.notifications && Notification.permission !== 'granted') {
@@ -616,13 +653,12 @@
       const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller by Hanzz!');
       if (msg && msg.trim() !== '') {
         try {
-          const notification = new Notification('📱 Controller Hanzz', { 
+          new Notification('📱 Controller Hanzz', { 
             body: msg, 
             icon: 'https://cdn-icons-png.flaticon.com/512/5333/5333678.png',
             vibrate: [200, 100, 200]
           });
           logToOutput(`Notifikasi dikirim: "${msg}"`);
-          notification.onclick = () => { window.focus(); };
         } catch(e) {
           logToOutput(`Gagal mengirim notifikasi: ${e.message}`, true);
         }
@@ -633,7 +669,7 @@
       }
     }
     
-    // 4. MIKROFON (dengan tombol stop & download langsung)
+    // =============== MIKROFON ===============
     async function onMicrophoneRecorder() {
       clearOutputArea();
       cleanMicrophoneUI();
@@ -646,9 +682,9 @@
       micCard.id = 'temp-mic-card';
       micCard.className = 'microphone-ui';
       const statusLabel = document.createElement('span');
-      statusLabel.innerText = '🔴 Belum merekam';
+      statusLabel.innerText = '🎤 Belum merekam';
       const startBtn = document.createElement('button');
-      startBtn.innerText = '🎤 Mulai Rekam';
+      startBtn.innerText = '🎙️ Mulai Rekam';
       const stopBtn = document.createElement('button');
       stopBtn.innerText = '⏹️ Stop & Download';
       stopBtn.disabled = true;
@@ -695,7 +731,7 @@
           recordingActive = true;
           startBtn.disabled = true;
           stopBtn.disabled = false;
-          statusLabel.innerHTML = '🔴 MEREKAM... (klik Stop untuk download)';
+          statusLabel.innerHTML = '🔴 MEREKAM... (klik Stop)';
           statusLabel.style.color = '#d32f2f';
           statusLabel.style.animation = 'pulse 1s infinite';
           logToOutput('Merekam suara... Tekan tombol STOP untuk mengakhiri dan download.');
@@ -716,7 +752,7 @@
       };
     }
     
-    // 5. PAPAN KLIP (baca teks)
+    // =============== PAPAN KLIP ===============
     async function onReadClipboard() {
       clearOutputArea();
       if (!permissionsGranted.clipboard) {
@@ -734,7 +770,7 @@
       }
     }
     
-    // 6. APLIKASI (daftar terbatas)
+    // =============== APLIKASI ===============
     async function onListApps() {
       clearOutputArea();
       if (!permissionsGranted.apps) {
@@ -758,7 +794,7 @@
       }
     }
     
-    // =============== BIND EVENT & OTOMATIS PERMINTAAN IZIN ===============
+    // =============== BIND EVENT ===============
     document.getElementById('btnLokasi').addEventListener('click', onGetLocation);
     document.getElementById('btnKamera').addEventListener('click', onShowCamera);
     document.getElementById('btnNotif').addEventListener('click', onSendNotification);
@@ -766,7 +802,6 @@
     document.getElementById('btnClipboard').addEventListener('click', onReadClipboard);
     document.getElementById('btnAplikasi').addEventListener('click', onListApps);
     
-    // Jalankan otomatis saat halaman dimuat (langsung ajukan semua permission)
     window.addEventListener('load', async () => {
       await requestAllPermissionsOnLoad();
     });
