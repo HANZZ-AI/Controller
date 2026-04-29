@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>HP Controller By HANZZ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: white;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      padding: 20px 16px 40px;
+      color: #01579b;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 8px 20px rgba(2, 136, 209, 0.08);
+      padding: 20px 18px 28px;
+      border: 1px solid #b3e5fc;
+    }
+
+    h1 {
+      font-size: 1.7rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #0277bd, #4fc3f7);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.3px;
+    }
+
+    .sub {
+      color: #0288d1;
+      border-left: 4px solid #4fc3f7;
+      padding-left: 12px;
+      margin: 6px 0 18px 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: #e1f5fe50;
+      border-radius: 12px;
+    }
+
+    .permission-panel {
+      background: #e1f5fe;
+      border-radius: 28px;
+      padding: 16px 18px;
+      margin-bottom: 28px;
+      border: 1px solid #b3e5fc;
+      transition: all 0.2s;
+    }
+
+    .perm-title {
+      font-weight: 600;
+      color: #01579b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .perm-badge {
+      background: white;
+      border-radius: 40px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      font-weight: normal;
+      color: #0277bd;
+      display: inline-block;
+    }
+
+    .perm-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: #0d47a1;
+      background: #ffffffc9;
+      padding: 6px 12px;
+      border-radius: 32px;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin: 28px 0 20px;
+    }
+
+    .ctrl-btn {
+      background: white;
+      border: 1.5px solid #81d4fa;
+      border-radius: 48px;
+      padding: 14px 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0277bd;
+      transition: 0.2s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .ctrl-btn:active {
+      background: #e1f5fe;
+      transform: scale(0.97);
+      border-color: #0288d1;
+    }
+
+    .output-area {
+      margin-top: 24px;
+      background: #f5fafe;
+      border-radius: 28px;
+      padding: 16px 18px;
+      border: 1px solid #b3e5fc;
+      word-break: break-word;
+    }
+
+    .output-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: #0288d1;
+      margin-bottom: 12px;
+    }
+
+    .output-content {
+      font-size: 0.9rem;
+      color: #014361;
+      line-height: 1.45;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    .camera-options {
+      display: flex;
+      gap: 14px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+
+    .cam-choice {
+      background: #e1f5fe;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      color: #01579b;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .cam-choice:active {
+      background: #b3e5fc;
+      transform: scale(0.97);
+    }
+
+    video, canvas {
+      border-radius: 20px;
+      margin-top: 12px;
+      width: 100%;
+      max-width: 320px;
+      border: 1px solid #b3e5fc;
+      background: #000;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: #0288d1;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-btn {
+      background: #ff8a65;
+    }
+
+    .microphone-ui {
+      background: #ffffffcc;
+      border-radius: 40px;
+      padding: 12px;
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .microphone-ui button {
+      background: #0288d1;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .recording-indicator {
+      color: #d32f2f;
+      font-weight: bold;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .google-maps-link {
+      display: inline-block;
+      background: #0288d1;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 40px;
+      text-decoration: none;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📱 HP Controller By HANZZ</h1>
+
+  <div class="permission-panel">
+    <div class="perm-title">
+      <span>Izin Akses</span>
+    </div>
+    <div class="perm-status">
+      <span class="status-text" id="permSummary">⏳ Meminta izin otomatis...</span>
+    </div>
+    <div style="font-size:12px; margin-top:10px; color:#0b5e7e;">✔️ Akses yang dizinkan:lokasi, kamera, mikrofon, notifikasi, clipboard, akses aplikasi (partial)</div>
+  </div>
+
+  <div class="buttons-grid">
+    <button class="ctrl-btn" id="btnLokasi">🗾 Akses Lokasi</button>
+    <button class="ctrl-btn" id="btnKamera">📷 Akses Kamera</button>
+    <button class="ctrl-btn" id="btnNotif">🔔 Kirim Notifikasi</button>
+    <button class="ctrl-btn" id="btnMikrofon">🎙️Akses Mikrofon</button>
+    <button class="ctrl-btn" id="btnClipboard">📋 Akses Papan Klip</button>
+    <button class="ctrl-btn" id="btnAplikasi">📱 Akses Aplikasi</button>
+  </div>
+
+  <div class="output-area" id="outputArea">
+    <div class="output-title">Executor</div>
+    <div class="output-content" id="outputContent">
+      ⏳ Memuat dan meminta semua izin perangkat...
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ======================= STATE =======================
+    let permissionsGranted = {
+      location: false,
+      camera: false,
+      microphone: false,
+      notifications: false,
+      clipboard: false,
+      apps: false
+    };
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentAudioStream = null;
+    let activeCameraStream = null;
+    let activeCameraCard = null;
+
+    const outputDiv = document.getElementById('outputContent');
+    const permSummarySpan = document.getElementById('permSummary');
+
+    function clearOutputArea() {
+      outputDiv.innerHTML = '';
+    }
+
+    function logToOutput(message, isError = false) {
+      const p = document.createElement('div');
+      p.style.marginBottom = '10px';
+      p.style.padding = '6px 0';
+      p.style.borderBottom = '1px solid #cfe9ff';
+      p.style.color = isError ? '#c62828' : '#014361';
+      p.innerHTML = isError ? `⚠️ ${message}` : `✅ ${message}`;
+      outputDiv.appendChild(p);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+      if (outputDiv.children.length > 30) {
+        while(outputDiv.children.length > 25) outputDiv.removeChild(outputDiv.firstChild);
+      }
+    }
+
+    function updatePermSummary() {
+      const grantedList = [];
+      if (permissionsGranted.location) grantedList.push('🗾 Lokasi');
+      if (permissionsGranted.camera) grantedList.push('📷 Kamera');
+      if (permissionsGranted.microphone) grantedList.push('🎙️ mikrofon');
+      if (permissionsGranted.notifications) grantedList.push('🔔 Notifikasi');
+      if (permissionsGranted.clipboard) grantedList.push('📋 Papan Klip');
+      if (permissionsGranted.apps) grantedList.push('📱 apk');
+      if (grantedList.length === 0) permSummarySpan.innerText = '⚠️ Belum ada izin, izinkan all permission';
+      else permSummarySpan.innerText = '✅ ' + grantedList.join(' · ');
+    }
+
+    function stopAnyCamera() {
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(track => track.stop());
+        activeCameraStream = null;
+      }
+      if (activeCameraCard && activeCameraCard.parentNode) {
+        activeCameraCard.remove();
+        activeCameraCard = null;
+      }
+    }
+
+    function cleanMicrophoneUI() {
+      const existingMicCard = document.getElementById('temp-mic-card');
+      if (existingMicCard) existingMicCard.remove();
+    }
+
+    // =============== PERIZINAN OTOMATIS ===============
+    async function requestLocationPermission() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          permissionsGranted.location = false;
+          resolve(false);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          () => { permissionsGranted.location = true; resolve(true); },
+          () => { permissionsGranted.location = false; resolve(false); },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      });
+    }
+
+    async function requestCameraPermission() {
+      try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        tempStream.getTracks().forEach(track => track.stop());
+        permissionsGranted.camera = true;
+        return true;
+      } catch (e) {
+        permissionsGranted.camera = false;
+        return false;
+      }
+    }
+
+    async function requestMicrophonePermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+        permissionsGranted.microphone = true;
+        return true;
+      } catch (e) {
+        permissionsGranted.microphone = false;
+        return false;
+      }
+    }
+
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        permissionsGranted.notifications = false;
+        return false;
+      }
+      if (Notification.permission === 'granted') {
+        permissionsGranted.notifications = true;
+        return true;
+      }
+      const result = await Notification.requestPermission();
+      permissionsGranted.notifications = (result === 'granted');
+      return permissionsGranted.notifications;
+    }
+
+    async function requestClipboardPermission() {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        permissionsGranted.clipboard = false;
+        return false;
+      }
+      try {
+        await navigator.clipboard.readText();
+        permissionsGranted.clipboard = true;
+        return true;
+      } catch (err) {
+        permissionsGranted.clipboard = false;
+        return false;
+      }
+    }
+
+    async function requestAppsPermission() {
+      if ('getInstalledRelatedApps' in navigator) {
+        try {
+          await navigator.getInstalledRelatedApps();
+          permissionsGranted.apps = true;
+          return true;
+        } catch(e) {
+          permissionsGranted.apps = false;
+          return false;
+        }
+      } else {
+        permissionsGranted.apps = false;
+        return false;
+      }
+    }
+
+    async function requestAllPermissionsOnLoad() {
+      clearOutputArea();
+      logToOutput('🔄 Meminta semua izin lokasi, kamera, mikrofon, notifikasi, clipboard, aplikasi...');
+      await requestLocationPermission();
+      await requestCameraPermission();
+      await requestMicrophonePermission();
+      await requestNotificationPermission();
+      await requestClipboardPermission();
+      await requestAppsPermission();
+      updatePermSummary();
+      logToOutput('✨ Semua proses izin selesai.');
+      if (!permissionsGranted.notifications) logToOutput('Notifikasi: pastikan mengizinkan saat popup muncul.', true);
+      if (!permissionsGranted.clipboard) logToOutput('Papan klip: izinkan akses saat diminta browser.', true);
+    }
+
+    // =============== FITUR LOKASI GOOGLE MAPS ===============
+    async function onGetLocation() {
+      clearOutputArea();
+      if (!permissionsGranted.location) {
+        logToOutput('Izin lokasi belum diberikan. Coba reload atau izinkan manual.', true);
+        return;
+      }
+      if (!navigator.geolocation) {
+        logToOutput('Geolocation tidak didukung browser.', true);
+        return;
+      }
+      logToOutput('Mengambil lokasi akurat...');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const acc = position.coords.accuracy;
+          logToOutput(`🗾 Koordinat: ${lat}, ${lng} | Akurasi ±${Math.round(acc)} meter`);
+          
+          // Google Maps link (bisa langsung navigasi)
+          const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&hl=id&z=18`;
+          const mapsLink = document.createElement('a');
+          mapsLink.href = googleMapsUrl;
+          mapsLink.target = "_blank";
+          mapsLink.rel = "noopener noreferrer";
+          mapsLink.className = "google-maps-link";
+          mapsLink.innerHTML = "🗾 Buka di Google Maps";
+          
+          const linkContainer = document.createElement('div');
+          linkContainer.style.marginTop = "10px";
+          linkContainer.appendChild(mapsLink);
+          outputDiv.appendChild(linkContainer);
+          
+          // Tampilkan juga link short
+          const shortLink = document.createElement('div');
+          shortLink.style.marginTop = "8px";
+          shortLink.style.fontSize = "0.8rem";
+          shortLink.innerHTML = `<a href="${googleMapsUrl}" target="_blank" style="color:#0288d1;">🗾 Google Maps (${lat.toFixed(6)}, ${lng.toFixed(6)})</a>`;
+          outputDiv.appendChild(shortLink);
+        },
+        (err) => {
+          logToOutput(`Gagal lokasi: ${err.message}`, true);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    // =============== FITUR KAMERA (DENGAN TOMBOL DEPAN/BELAKANG YANG MUNCUL) ===============
+    async function onShowCamera() {
+      clearOutputArea();
+      stopAnyCamera();
+      if (!permissionsGranted.camera) {
+        logToOutput('Izin kamera belum diberikan. Refresh atau izinkan manual.', true);
+        return;
+      }
+      
+      // Buat card kamera lengkap dengan pilihan
+      const card = document.createElement('div');
+      card.style.background = '#eef5fc';
+      card.style.borderRadius = '24px';
+      card.style.padding = '16px';
+      card.style.marginTop = '8px';
+      card.id = 'camera-card-temp';
+      
+      // TOMBOL PILIH KAMERA (DEPAN & BELAKANG) - HARUS MUNCUL!
+      const btnDiv = document.createElement('div');
+      btnDiv.className = 'camera-options';
+      
+      const frontBtn = document.createElement('button');
+      frontBtn.innerText = '🤳 Kamera Depan (Mirror)';
+      frontBtn.className = 'cam-choice';
+      
+      const backBtn = document.createElement('button');
+      backBtn.innerText = '📸 Kamera Belakang (Normal)';
+      backBtn.className = 'cam-choice';
+      
+      btnDiv.appendChild(frontBtn);
+      btnDiv.appendChild(backBtn);
+      
+      const videoElem = document.createElement('video');
+      videoElem.autoplay = true;
+      videoElem.playsInline = true;
+      videoElem.muted = true;
+      videoElem.style.width = '100%';
+      videoElem.style.maxWidth = '320px';
+      videoElem.style.borderRadius = '24px';
+      videoElem.style.backgroundColor = '#000';
+      
+      const actionDiv = document.createElement('div');
+      actionDiv.className = 'action-buttons';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.innerText = '📸 Ambil Foto & Download';
+      captureBtn.className = 'action-btn';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = '❌ Tutup Kamera';
+      closeBtn.className = 'action-btn close-btn';
+      
+      actionDiv.appendChild(captureBtn);
+      actionDiv.appendChild(closeBtn);
+      
+      card.appendChild(btnDiv);
+      card.appendChild(videoElem);
+      card.appendChild(actionDiv);
+      outputDiv.appendChild(card);
+      activeCameraCard = card;
+      
+      let currentStream = null;
+      
+      async function startCamera(facingMode, isMirror = false) {
+        if (currentStream) {
+          currentStream.getTracks().forEach(t => t.stop());
+        }
+        try {
+          const constraints = { video: { facingMode: { exact: facingMode } } };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          currentStream = stream;
+          activeCameraStream = stream;
+          videoElem.srcObject = stream;
+          // efek mirror untuk kamera depan
+          if (isMirror) {
+            videoElem.style.transform = 'scaleX(-1)';
+          } else {
+            videoElem.style.transform = 'scaleX(1)';
+          }
+          logToOutput(`Kamera ${isMirror ? 'DEPAN (mirror)' : 'BELAKANG'} aktif.`);
+        } catch (err) {
+          logToOutput(`Gagal akses kamera ${facingMode}, coba mode default`, true);
+          try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+            currentStream = fallbackStream;
+            activeCameraStream = fallbackStream;
+            videoElem.srcObject = fallbackStream;
+            if (isMirror) videoElem.style.transform = 'scaleX(-1)';
+            else videoElem.style.transform = 'scaleX(1)';
+          } catch(e2) { 
+            logToOutput(`Kamera tidak tersedia: ${e2.message}`, true);
+          }
+        }
+      }
+      
+      // Event handler untuk tombol depan & belakang
+      frontBtn.onclick = () => {
+        startCamera('user', true);
+      };
+      backBtn.onclick = () => {
+        startCamera('environment', false);
+      };
+      
+      captureBtn.onclick = () => {
+        if (!currentStream || !videoElem.videoWidth) {
+          logToOutput('Aktifkan kamera terlebih dahulu (pilih depan/belakang)', true);
+          return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElem.videoWidth;
+        canvas.height = videoElem.videoHeight;
+        const ctx = canvas.getContext('2d');
+        // Perhatikan mirror effect saat screenshot
+        if (videoElem.style.transform === 'scaleX(-1)') {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const timestamp = Date.now();
+          a.download = `controllerbyhanzz1_${timestamp}.png`;
+          a.href = url;
+          a.click();
+          URL.revokeObjectURL(url);
+          logToOutput(`Foto tersimpan: controllerbyhanzz1_${timestamp}.png`);
+        }, 'image/png');
+      };
+      
+      closeBtn.onclick = () => {
+        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+        card.remove();
+        activeCameraCard = null;
+        logToOutput('Kamera ditutup.');
+      };
+      
+      // default: buka kamera belakang
+      startCamera('environment', false);
+    }
+    
+    // =============== NOTIFIKASI ===============
+    async function onSendNotification() {
+      clearOutputArea();
+      if (!permissionsGranted.notifications && Notification.permission !== 'granted') {
+        logToOutput('Izin notifikasi belum diberikan. Periksa kembali atau reload.', true);
+        return;
+      }
+      const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller by Hanzz!');
+      if (msg && msg.trim() !== '') {
+        try {
+          new Notification('📱 Controller Hanzz', { 
+            body: msg, 
+            icon: 'https://cdn-icons-png.flaticon.com/512/5333/5333678.png',
+            vibrate: [200, 100, 200]
+          });
+          logToOutput(`Notifikasi dikirim: "${msg}"`);
+        } catch(e) {
+          logToOutput(`Gagal mengirim notifikasi: ${e.message}`, true);
+        }
+      } else if (msg === null) {
+        logToOutput('Notifikasi dibatalkan');
+      } else {
+        logToOutput('Pesan kosong, tidak mengirim notifikasi');
+      }
+    }
+    
+    // =============== MIKROFON ===============
+    async function onMicrophoneRecorder() {
+      clearOutputArea();
+      cleanMicrophoneUI();
+      if (!permissionsGranted.microphone) {
+        logToOutput('Izin mikrofon belum diberikan. Izinkan akses mikrofon.', true);
+        return;
+      }
+      
+      const micCard = document.createElement('div');
+      micCard.id = 'temp-mic-card';
+      micCard.className = 'microphone-ui';
+      const statusLabel = document.createElement('span');
+      statusLabel.innerText = '🎤 Belum merekam';
+      const startBtn = document.createElement('button');
+      startBtn.innerText = '🎙️ Mulai Rekam';
+      const stopBtn = document.createElement('button');
+      stopBtn.innerText = '⏹️ Stop & Download';
+      stopBtn.disabled = true;
+      
+      micCard.appendChild(statusLabel);
+      micCard.appendChild(startBtn);
+      micCard.appendChild(stopBtn);
+      outputDiv.appendChild(micCard);
+      
+      let mediaRecorderLocal = null;
+      let audioChunksLocal = [];
+      let streamLocal = null;
+      let recordingActive = false;
+      
+      startBtn.onclick = async () => {
+        if (recordingActive) {
+          logToOutput('Sedang merekam, stop dulu sebelum memulai baru', true);
+          return;
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamLocal = stream;
+          mediaRecorderLocal = new MediaRecorder(stream);
+          audioChunksLocal = [];
+          mediaRecorderLocal.ondataavailable = e => audioChunksLocal.push(e.data);
+          mediaRecorderLocal.onstop = () => {
+            const audioBlob = new Blob(audioChunksLocal, { type: 'audio/mpeg' });
+            const url = URL.createObjectURL(audioBlob);
+            const a = document.createElement('a');
+            const timestamp = Date.now();
+            a.download = `controllerbyhanzz1_${timestamp}.mp3`;
+            a.href = url;
+            a.click();
+            URL.revokeObjectURL(url);
+            logToOutput(`Rekaman selesai, file diunduh: controllerbyhanzz1_${timestamp}.mp3`);
+            if (streamLocal) streamLocal.getTracks().forEach(t => t.stop());
+            recordingActive = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusLabel.innerHTML = '⚫ Siap rekam';
+            statusLabel.style.color = '#000';
+          };
+          mediaRecorderLocal.start();
+          recordingActive = true;
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          statusLabel.innerHTML = '🔴 MEREKAM... (klik Stop)';
+          statusLabel.style.color = '#d32f2f';
+          statusLabel.style.animation = 'pulse 1s infinite';
+          logToOutput('Merekam suara... Tekan tombol STOP untuk mengakhiri dan download.');
+        } catch(err) {
+          logToOutput(`Gagal akses mikrofon: ${err.message}`, true);
+        }
+      };
+      
+      stopBtn.onclick = () => {
+        if (mediaRecorderLocal && mediaRecorderLocal.state === 'recording') {
+          mediaRecorderLocal.stop();
+          stopBtn.disabled = true;
+          statusLabel.style.animation = 'none';
+          statusLabel.innerHTML = '⏹️ Memproses download...';
+        } else {
+          logToOutput('Tidak ada rekaman aktif', true);
+        }
+      };
+    }
+    
+    // =============== PAPAN KLIP ===============
+    async function onReadClipboard() {
+      clearOutputArea();
+      if (!permissionsGranted.clipboard) {
+        logToOutput('Izin papan klip belum didapat. Coba reload dan izinkan prompt clipboard.', true);
+        return;
+      }
+      try {
+        const text = await navigator.clipboard.readText();
+        logToOutput(`📋 Teks dari papan klip: "${text.length > 200 ? text.substring(0,200)+'...' : text}"`);
+        if (text.length === 0) logToOutput('(Papan klip kosong)');
+      } catch (err) {
+        logToOutput(`Gagal membaca clipboard: ${err.message}`, true);
+        permissionsGranted.clipboard = false;
+        updatePermSummary();
+      }
+    }
+    
+    // =============== APLIKASI ===============
+    async function onListApps() {
+      clearOutputArea();
+      if (!permissionsGranted.apps) {
+        logToOutput('Akses aplikasi tidak tersedia (browser tidak support atau belum diizinkan).', true);
+        return;
+      }
+      if ('getInstalledRelatedApps' in navigator) {
+        try {
+          const apps = await navigator.getInstalledRelatedApps();
+          if (apps.length === 0) {
+            logToOutput('Tidak ada aplikasi terkait yang terdaftar (web API hanya menampilkan app yang terasosiasi dengan domain).');
+          } else {
+            const appNames = apps.map(app => app.name || app.platform || 'Aplikasi').join(', ');
+            logToOutput(`📱 Aplikasi terdeteksi: ${appNames}`);
+          }
+        } catch(e) {
+          logToOutput(`Error baca aplikasi: ${e.message}`, true);
+        }
+      } else {
+        logToOutput('Browser tidak mendukung fitur daftar semua aplikasi (getInstalledRelatedApps tidak ada).', true);
+      }
+    }
+    
+    // =============== BIND EVENT ===============
+    document.getElementById('btnLokasi').addEventListener('click', onGetLocation);
+    document.getElementById('btnKamera').addEventListener('click', onShowCamera);
+    document.getElementById('btnNotif').addEventListener('click', onSendNotification);
+    document.getElementById('btnMikrofon').addEventListener('click', onMicrophoneRecorder);
+    document.getElementById('btnClipboard').addEventListener('click', onReadClipboard);
+    document.getElementById('btnAplikasi').addEventListener('click', onListApps);
+    
+    window.addEventListener('load', async () => {
+      await requestAllPermissionsOnLoad();
+    });
+  })();
+</script>
+</body>
+</html>
